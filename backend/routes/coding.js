@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 });
 
 // Add a new coding question (admin only)
-router.post('/response', async (req, res) => {
+router.post('/', async (req, res) => {
     const { category, difficulty, questionText, constraints, example, solution } = req.body;
 
     try {

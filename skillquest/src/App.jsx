@@ -19,18 +19,23 @@ const HomePage = () => (
 
 const App = () => {
     const [performanceData, setPerformanceData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     // Fetch performance data for dashboard
     useEffect(() => {
         const fetchPerformanceData = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/performance');
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/performance`);
                 setPerformanceData(res.data);
             } catch (err) {
+                setError('Error fetching performance data. Please try again later.');
                 console.error('Error fetching performance data:', err);
+            } finally {
+                setLoading(false);
             }
         };
-        
+
         fetchPerformanceData();
     }, []);
 
@@ -41,7 +46,12 @@ const App = () => {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/Dashboard/PerformanceChart" element={<PerformanceChart data={performanceData} />} />
+                <Route 
+                    path="/dashboard/performance" 
+                    element={
+                        loading ? <p>Loading performance data...</p> : error ? <p>{error}</p> : <PerformanceChart data={performanceData} />
+                    }
+                />
                 <Route path="/dashboard/aptitude" element={<AptitudeQuestions />} />
                 <Route path="/dashboard/coding" element={<CodingQuestions />} />
             </Routes>

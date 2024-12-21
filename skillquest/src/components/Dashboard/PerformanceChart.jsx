@@ -1,76 +1,29 @@
 import React from 'react';
-import {
-    Chart as ChartJS,
-    LineElement,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    Tooltip,
-    Legend,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import PerformanceChart from './PerformanceChart';
 
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
-
-const PerformanceChart = ({ data }) => {
-    if (!data || data.length === 0) {
-        return <p>No data available</p>;
-    }
-
-    const chartData = {
-        labels: data.map((entry) => new Date(entry.date).toLocaleDateString()),
-        datasets: [
-            {
-                label: 'Aptitude Score',
-                data: data.map((entry) => entry.scores.aptitude),
-                borderColor: 'rgba(75,192,192,1)',
-                borderWidth: 2,
-                tension: 0.4, // Adds a curve to the line
-                fill: false,
-            },
-            {
-                label: 'Coding Score',
-                data: data.map((entry) => entry.scores.coding),
-                borderColor: 'rgba(255,99,132,1)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: false,
-            },
-        ],
+const App = () => {
+    const user = {
+        name: 'John Doe',
+        email: 'johndoe@example.com',
+        joinDate: '2023-01-15',
     };
 
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: true,
-                position: 'top',
-            },
+    const data = [
+        {
+            date: '2023-12-01',
+            scores: { aptitude: 50, coding: 70 },
         },
-        scales: {
-            x: {
-                title: {
-                    display: true,
-                    text: 'Date',
-                },
-            },
-            y: {
-                title: {
-                    display: true,
-                    text: 'Score',
-                },
-                beginAtZero: true,
-            },
+        {
+            date: '2023-12-10',
+            scores: { aptitude: 65, coding: 80 },
         },
-    };
+        {
+            date: '2023-12-20',
+            scores: { aptitude: 75, coding: 90 },
+        },
+    ];
 
-    return (
-        <div style={{ height: '400px' }}>
-            <h2>Performance Chart</h2>
-            <Line data={chartData} options={options} />
-        </div>
-    );
+    return <PerformanceChart data={data} user={user} />;
 };
 
-export default PerformanceChart;
+export default App;
