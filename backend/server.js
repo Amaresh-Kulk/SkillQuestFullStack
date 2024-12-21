@@ -18,7 +18,8 @@ app.use(express.json());
 // Routes
 app.use('/api/users', usersRouter); // Route for user-related operations
 app.use('/api/aptitude', aptitudeRouter); // Route for aptitude-related operations
-app.use('/api/coding', codingRouter); // Route for coding-related operations
+app.use('/api/coding', codingRouter); // Correctly handles /api/coding
+ // Route for coding-related operations
 
 // Start the server
 const PORT = process.env.PORT || 5000;

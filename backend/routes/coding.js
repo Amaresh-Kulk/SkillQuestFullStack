@@ -1,5 +1,5 @@
 const express = require('express');
-const coding = require('../models/coding');
+const DSA = require('../models/Coding.js'); // Correct model import
 const auth = require('../middleware/auth');
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
         if (category) query.category = category;
         if (difficulty) query.difficulty = difficulty;
 
-        const questions = await coding.find(query);
+        const questions = await DSA.find(query); // Correct method
         res.json(questions);
     } catch (err) {
         console.error(err.message);
@@ -21,11 +21,11 @@ router.get('/', async (req, res) => {
 });
 
 // Add a new coding question (admin only)
-router.post('/', auth, async (req, res) => {
+router.post('/response', async (req, res) => {
     const { category, difficulty, questionText, constraints, example, solution } = req.body;
 
     try {
-        const newQuestion = new coding({
+        const newQuestion = new DSA({ // Correct model usage
             category,
             difficulty,
             questionText,
@@ -45,7 +45,7 @@ router.post('/', auth, async (req, res) => {
 // Update an existing coding question (admin only)
 router.put('/:id', auth, async (req, res) => {
     try {
-        let question = await coding.findById(req.params.id);
+        let question = await DSA.findById(req.params.id); // Correct model usage
         if (!question) return res.status(404).json({ msg: 'Question not found' });
 
         question.set(req.body);
@@ -61,7 +61,7 @@ router.put('/:id', auth, async (req, res) => {
 // Delete a coding question (admin only)
 router.delete('/:id', auth, async (req, res) => {
     try {
-        let question = await coding.findById(req.params.id);
+        let question = await DSA.findById(req.params.id); // Correct model usage
         if (!question) return res.status(404).json({ msg: 'Question not found' });
 
         await question.remove();
