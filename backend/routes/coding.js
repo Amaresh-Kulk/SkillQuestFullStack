@@ -1,5 +1,5 @@
 const express = require('express');
-const DSA = require('../models/Coding.js'); // Correct model import
+const DSA = require('../models/Coding'); // Correct model import
 const auth = require('../middleware/auth');
 const router = express.Router();
 
@@ -21,11 +21,11 @@ router.get('/', async (req, res) => {
 });
 
 // Add a new coding question (admin only)
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     const { category, difficulty, questionText, constraints, example, solution } = req.body;
 
     try {
-        const newQuestion = new DSA({ // Correct model usage
+        const newQuestion = new DSA({
             category,
             difficulty,
             questionText,
