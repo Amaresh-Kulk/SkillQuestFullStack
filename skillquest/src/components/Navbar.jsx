@@ -1,6 +1,26 @@
+// components/Auth/Navbar.jsx
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const Navbar = () => {
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+
+        if (token) {
+            try {
+                const decoded = jwtDecode(token); // Decode the token
+                const isTokenValid = decoded.exp * 1000 > Date.now(); // Check expiration time
+
+                if (!isTokenValid) {
+                    localStorage.removeItem('token'); // Remove expired token
+                }
+            } catch (error) {
+                console.error('Invalid token:', error);
+                localStorage.removeItem('token'); // Remove invalid token
+            }
+        }
+    }, []); // Run this effect once when the component mounts
+
     return (
         <nav role="navigation" aria-label="Main Navigation">
             <h1>Interview Prep</h1>
@@ -15,7 +35,7 @@ const Navbar = () => {
                     <Link to="/register" aria-label="Register a new account">Register</Link>
                 </li>
                 <li>
-                    <Link to="/dashboard/performance" aria-label="View your performance chart">Performance</Link>
+                    <Link to="/user/profile" aria-label="View your profile">Profile</Link>
                 </li>
                 <li>
                     <Link to="/dashboard/aptitude" aria-label="Access aptitude questions">Aptitude</Link>

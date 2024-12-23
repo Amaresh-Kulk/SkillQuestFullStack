@@ -18,7 +18,7 @@ const CodingList = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`http://localhost:5000/api/coding?difficulty=${difficulty}`);
+      const res = await axios.get(`http://localhost:8000/api/coding?difficulty=${difficulty}`);
       setQuestions(res.data); // Ensure res.data is an array of question objects
     } catch (err) {
       console.error('Error fetching coding questions:', err);
@@ -54,7 +54,7 @@ const CodingList = () => {
     if (!selectedQuestion) return;
 
     try {
-      const response = await axios.post(`http://localhost:5000/api/run`, {
+      const response = await axios.post(`http://localhost:8000/api/run`, {
         code: selectedQuestion.solution,
         testCases: selectedQuestion.testCases, // Assuming test cases are part of the question
         language: 'javascript', // Adjust based on the language you're using

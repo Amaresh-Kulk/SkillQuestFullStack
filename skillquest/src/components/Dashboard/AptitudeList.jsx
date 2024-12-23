@@ -14,7 +14,7 @@ const AptitudeQuestions = () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await axios.get(`http://localhost:5000/api/aptitude?difficulty=${category}`);
+            const res = await axios.get(`http://localhost:8000/api/aptitude?difficulty=${category}`);
             setQuestions(res.data);
             setClickedAnswers({});
             setScore(0); // Reset score when category changes

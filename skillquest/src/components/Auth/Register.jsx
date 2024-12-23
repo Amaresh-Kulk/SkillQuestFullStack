@@ -1,6 +1,8 @@
+
 //components/Auth/Register.jsx
 import { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
     const [username, setUsername] = useState('');
@@ -8,6 +10,7 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();  // Use navigate hook for redirect
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -15,8 +18,15 @@ const Register = () => {
         setMessage('');
 
         try {
-            const res = await axios.post('http://localhost:5000/api/users/register', { username, email, password });
+            const res = await axios.post('http://localhost:8000/api/users/register', { username, email, password });
             setMessage('Registration successful! You can now log in.');
+
+            // After successful registration, automatically log in the user
+            const loginRes = await axios.post('http://localhost:8000/api/users/login', { email, password });
+            localStorage.setItem('token', loginRes.data.token); // Store the token in localStorage
+
+            // Redirect the user to the Profile page after login
+            navigate('/dashboard/profile');
         } catch (err) {
             if (err.response && err.response.data && err.response.data.error) {
                 setMessage(err.response.data.error);

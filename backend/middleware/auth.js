@@ -1,37 +1,62 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const auth = async (req, res, next) => {
+    // try {
+        // // Get token from Authorization header
+        // const authHeader = req.header('Authorization');
 
-const auth = (req, res, next) => {
+        // if (!authHeader) {
+        //     return res.status(401).json({ msg: 'Authorization header missing, access denied' });
+        // }
+
+        // const token = authHeader.split(' ')[1]; // Expected format: "Bearer <token>"
+        
+        // if (!token) {
+        //     return res.status(401).json({ msg: 'Token missing in Authorization header' });
+        // }
+
+        // // Verify the token using the JWT secret
+        // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        // // Validate the decoded payload structure
+        // if (!decoded || !decoded.user || !decoded.user.id) {
+        //     return res.status(401).json({ msg: 'Invalid token structure' });
+        // }
+
+
+        const { token } = req.cookies;
+
+    if (!token) {
+        console.error("Token is missing.");
+        return res.status(400).json({ status: false, message: "Please log in" });
+    }
+
     try {
-        // Get token from Authorization header
-        const token = req.header('Authorization')?.split(' ')[1];
-
-        // Check if no token is provided
-        if (!token) {
-            return res.status(401).json({ msg: 'No token provided, authorization denied' });
-        }
-
-        // Verify the token with JWT_SECRET from .env
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("Decoded Token:", decoded); // Log decoded token
 
-        // Validate decoded user object
-        if (!decoded.user || !decoded.user.id) {
-            return res.status(400).json({ msg: 'Invalid token payload' });
+        const user = await User.findById(decoded.user.id);
+
+        if (!user) {
+            console.error("User not found.");
+            return res.status(400).json({ status: false, message: "User not found. Please register." });
         }
 
-        // Attach the user data to the request object
-        req.user = decoded.user;
+        req.user = user;
+        next();
 
-        next(); // Proceed to the next middleware or route handler
     } catch (err) {
         console.error('Error in auth middleware:', err.message);
 
-        // Handle token expiration specifically
+        // Handle specific JWT errors
         if (err.name === 'TokenExpiredError') {
-            return res.status(401).json({ msg: 'Token has expired' });
+            return res.status(401).json({ msg: 'Token has expired, please log in again' });
+        } else if (err.name === 'JsonWebTokenError') {
+            return res.status(401).json({ msg: 'Invalid token, access denied' });
         }
 
-        // Handle other token errors
-        return res.status(401).json({ msg: 'Token is not valid' });
+        // Handle any other errors
+        return res.status(500).json({ msg: 'Server error in authorization middleware' });
     }
 };
 

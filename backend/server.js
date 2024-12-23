@@ -5,6 +5,27 @@ const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const { exec } = require("child_process");
+const cookieParser = require("cookie-parser");
+
+
+
+
+
+dotenv.config();
+
+
+const app = express();
+const PORT = 8000;
+
+app.use(cookieParser());
+// Middleware
+app.use(cors({
+  origin: '*', // Allow all origins for testing; restrict in production
+  methods: ['GET', 'POST'],
+}));
+
+app.use(bodyParser.json());
+app.use(express.json());
 
 // Import custom modules
 const connectDB = require("./config/db");
@@ -14,22 +35,7 @@ const runCodeRouter = require("./routes/runCode"); // Add runCode route
 const testCaseRouter = require("./routes/testcase");
 const usersRouter = require("./routes/users");
 
-
-
-dotenv.config();
 connectDB();
-
-const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Middleware
-app.use(cors({
-  origin: '*', // Allow all origins for testing; restrict in production
-  methods: ['GET', 'POST'],
-}));
-
-app.use(bodyParser.json());
-app.use(express.json());
 
 // Ensure the userCode folder exists
 const userCodeFolder = './userCode';
