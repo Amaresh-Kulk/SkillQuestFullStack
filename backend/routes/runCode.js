@@ -18,13 +18,11 @@ if (!fs.existsSync(TMP_FOLDER)) {
     fs.mkdirSync(TMP_FOLDER);
 }
 
-
-
 // Endpoint to run user code
 router.post('/run', async (req, res) => {
     console.log('Request received:', req.body);
 
-    const { code, language, userId, questionId } = req.body;
+    const { code, language, userId, questionId, testCases } = req.body;
 
     if (!code || !language) {
         return res.status(400).json({ error: 'Code and language are required.' });
@@ -65,6 +63,16 @@ router.post('/run', async (req, res) => {
 
         const output = error || stderr ? stderr || 'Error executing the code.' : stdout.trim();
 
+        // Check if test cases are provided and validate against the output
+        let testResults = [];
+        if (testCases && Array.isArray(testCases)) {
+            testResults = testCases.map(testCase => {
+                const expectedOutput = testCase.output;
+                const result = (stdout.trim() === expectedOutput) ? 'Pass' : 'Fail';
+                return { input: testCase.input, expectedOutput, actualOutput: stdout.trim(), result };
+            });
+        }
+
         // Save the submission to the database
         const submission = new Submission({
             userId,
@@ -72,13 +80,14 @@ router.post('/run', async (req, res) => {
             code,
             language,
             output,
+            testResults, // Save test case results if provided
             error: error || stderr ? output : null,
         });
 
         await submission.save();
 
         // Respond with the execution result
-        res.json({ output });
+        res.json({ output, testResults });
     });
 });
 

@@ -54,7 +54,7 @@ app.use("/api/users", usersRouter); // User-related operations
 app.use("/api/aptitude", aptitudeRouter); // Aptitude-related operations
 app.use("/api/coding", codingRouter); // Coding-related operations
 app.use("/api/testcases", testCaseRouter); // Test case-related operations
-app.use("/api/run", runCodeRouter);
+app.use("/api/runcode", runCodeRouter);
 
 // Start the server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

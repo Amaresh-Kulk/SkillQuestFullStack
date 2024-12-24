@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,9 +25,6 @@ const Login = () => {
             localStorage.setItem('user', JSON.stringify(user)); // Store user details for future use
 
             setMessage('Login successful!');
-            
-            // Redirect to the Profile page after login
-            navigate('/user/profile');
         } catch (err) {
             // Error handling for API response
             if (err.response && err.response.data && err.response.data.error) {

@@ -1,5 +1,3 @@
-// components/Dashboard/CodingList.jsx
-
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import MonacoEditor from '@monaco-editor/react'; // Import MonacoEditor
@@ -53,11 +51,15 @@ const CodingList = () => {
   const handleExecuteCode = async () => {
     if (!selectedQuestion) return;
 
+    const userId = "67669f5948033ab9676ddb19"; // Replace with the actual userId (e.g., from the logged-in user)
+    const questionId = selectedQuestion._id; // Use the selected question's ID
     try {
-      const response = await axios.post(`http://localhost:8000/api/run`, {
+      const response = await axios.post(`http://localhost:8000/api/runcode/run`, {
         code: selectedQuestion.solution,
         testCases: selectedQuestion.testCases, // Assuming test cases are part of the question
         language: 'javascript', // Adjust based on the language you're using
+        userId, // Include userId
+        questionId, // Include questionId
       });
 
       setExecutionResult(response.data); // Set the result of code execution
@@ -68,33 +70,17 @@ const CodingList = () => {
   };
 
   return (
-    <div>
-      <h2>Coding Questions</h2>
+    <div className="coding-list-container">
+      <h2 className="page-title">Coding Questions</h2>
 
       {/* Difficulty Selector */}
-      <div>
+      <div className="difficulty-selector">
         <h3>Select Difficulty:</h3>
-        <ul
-          style={{
-            display: 'flex',
-            gap: '10px',
-            listStyle: 'none',
-            padding: 0,
-            justifyContent: 'center',
-          }}
-        >
+        <ul className="difficulty-list">
           {difficulties.map((difficulty) => (
             <li key={difficulty}>
               <button
-                style={{
-                  padding: '5px 10px',
-                  backgroundColor: difficulty === selectedDifficulty ? '#007bff' : '#ccc',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                }}
+                className={`difficulty-button ${difficulty === selectedDifficulty ? 'active' : ''}`}
                 onClick={() => handleDifficultyChange(difficulty)}
               >
                 {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
@@ -106,20 +92,15 @@ const CodingList = () => {
 
       {/* Loading, Error, or Questions Display */}
       {loading ? (
-        <p>Loading coding questions...</p>
+        <p className="loading-text">Loading coding questions...</p>
       ) : error ? (
-        <p style={{ color: 'red' }}>{error}</p>
+        <p className="error-message">{error}</p>
       ) : questions.length > 0 ? (
-        <div>
+        <div className="questions-container">
           {questions.map((question) => (
             <div
               key={question._id}
-              style={{
-                marginBottom: '20px',
-                border: '1px solid #ccc',
-                padding: '10px',
-                borderRadius: '5px',
-              }}
+              className="question-card"
             >
               <h3>{question.questionText}</h3>
               <p><strong>Category:</strong> {question.category}</p>
@@ -137,15 +118,7 @@ const CodingList = () => {
               {/* Select Question for Editing */}
               <button
                 onClick={() => handleSelectQuestion(question)}
-                style={{
-                  marginTop: '10px',
-                  padding: '10px 20px',
-                  backgroundColor: '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                }}
+                className="edit-button"
               >
                 Edit Solution
               </button>
@@ -163,42 +136,22 @@ const CodingList = () => {
                       selectOnLineNumbers: true,
                       minimap: { enabled: false },
                     }}
-                    style={{
-                      display: 'block',
-                      marginTop: '10px',
-                      width: '100%',
-                    }}
+                    className="monaco-editor"
                   />
 
                   <button
                     onClick={handleExecuteCode}
-                    style={{
-                      marginTop: '10px',
-                      padding: '10px 20px',
-                      backgroundColor: '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                    }}
+                    className="execute-button"
                   >
                     Execute Code
                   </button>
 
                   {/* Display Execution Results */}
                   {executionResult && (
-                    <div
-                      style={{
-                        marginTop: '10px',
-                        padding: '10px',
-                        border: '1px solid #ccc',
-                        borderRadius: '5px',
-                        backgroundColor: '#f9f9f9',
-                      }}
-                    >
+                    <div className="execution-results">
                       <h4>Execution Results:</h4>
                       {executionResult.error ? (
-                        <p style={{ color: 'red' }}>{executionResult.error}</p>
+                        <p className="error-message">{executionResult.error}</p>
                       ) : (
                         <pre>{JSON.stringify(executionResult, null, 2)}</pre>
                       )}
@@ -210,7 +163,7 @@ const CodingList = () => {
           ))}
         </div>
       ) : (
-        <p>No coding questions available for "{selectedDifficulty}" difficulty.</p>
+        <p className="no-questions-message">No coding questions available for "{selectedDifficulty}" difficulty.</p>
       )}
     </div>
   );
