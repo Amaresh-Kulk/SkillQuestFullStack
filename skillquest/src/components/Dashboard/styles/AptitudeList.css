@@ -1,0 +1,146 @@
+/* General container */
+.aptitude-container {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  width: 1100px; /* Fixed width for the whole aptitude page */
+  margin: 0 auto; /* Center the container horizontally */
+  margin-left: 40px;
+  background-color: #1e1e1e; /* Dark background */
+  color: #f1f1f1; /* Lighter text */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Categories Section */
+.categories {
+  margin-bottom: 20px;
+  width: 100%; /* Full width of the fixed container */
+}
+
+/* Header Style */
+.categories h3 {
+  font-size: 1.5em;
+  color: #f1f1f1; /* Lighter text color */
+}
+
+/* Categories Flex with space between */
+.categories ul {
+  display: flex;
+  justify-content: space-between; /* Distribute items with space between */
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  width: 100%; /* Full width */
+}
+
+/* List Items (buttons) */
+.categories li {
+  margin: 10px; /* Add margin around each list item */
+  flex: 1; /* Ensures buttons expand to available space */
+  display: flex; /* Ensures the buttons stretch properly */
+  justify-content: center; /* Aligns buttons horizontally in the center */
+}
+
+/* Button Style */
+.categories button {
+  padding: 15px 30px;
+  background-color: #333; /* Dark button background */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 80%; /* Button takes 80% of the list item width */
+  margin: 0 auto; /* Centers the button inside the li */
+}
+
+/* Hover Effect for Buttons */
+.categories button:hover {
+  background-color: #555; /* Slightly lighter on hover */
+}
+
+
+/* Questions Section */
+.question-section {
+  margin-top: 20px;
+  width: 100%; /* Full width */
+}
+
+.question-section h3 {
+  font-size: 1.5em;
+}
+
+.question-section h4 {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+/* Options - 2x2 Grid */
+.options-container {
+  display: grid; /* Use grid for options */
+  grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  gap: 10px; /* Add gap between options */
+  justify-items: stretch; /* Ensure options stretch to full width */
+  width: 100%; /* Full width of the container */
+}
+
+.option-button {
+  cursor: pointer;
+  padding: 15px 30px;
+  border: 1px solid #444; /* Dark border */
+  border-radius: 5px;
+  background-color: #222; /* Dark background for options */
+  color: #f1f1f1; /* Light text */
+  transition: background-color 0.3s;
+  text-align: center;
+}
+
+.option-button.selected {
+  background-color: #4CAF50; /* Green selected background */
+}
+
+.option-button:hover {
+  background-color: #333; /* Darker background on hover */
+}
+
+/* Correct answer styling */
+.option-button.correct {
+  background-color: #28a745; /* Green background for correct option */
+  color: #fff; /* White text */
+}
+
+/* Buttons for navigation and submit */
+.button-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  width: 100%; /* Full width */
+}
+
+.button-container button {
+  padding: 15px 30px;
+  margin-right: 10px;
+  background-color: #333; /* Dark background for buttons */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 30%; /* Fixed width for navigation buttons */
+}
+
+.button-container button:hover {
+  background-color: #4CAF50; /* Hover effect */
+}
+
+/* Total Score */
+.total-score {
+  margin-top: 20px;
+  font-size: 1.2em;
+  text-align: center; /* Center the score */
+  color: #f1f1f1; /* Lighter score text */
+}

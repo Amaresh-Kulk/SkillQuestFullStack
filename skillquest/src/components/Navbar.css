@@ -1,0 +1,57 @@
+/* General navbar styling */
+nav {
+  background-color: #333; /* Dark background for the navbar */
+  padding: 10px 20px;
+  width: 100%; /* Full width */
+}
+
+/* Navbar Container */
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;  /* Max width for the container */
+  margin: 0 auto;     /* Center the container */
+  width: 100%;        /* Full width of the screen */
+}
+
+/* Left Section (SkillQuest) */
+.navbar-left {
+  flex: 0; /* Only take as much width as needed */
+}
+
+.navbar-left a {
+  color: #f1f1f1;
+  font-size: 1.8em;
+  text-decoration: none;
+  margin-left: 10px;
+}
+
+.navbar-left a:hover {
+  text-decoration: underline;
+}
+
+/* Right Section (Navigation Links) */
+.navbar-right {
+  display: flex;
+  justify-content: flex-end;
+  flex: 1;  /* Allow this section to take the remaining space */
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.nav-links a {
+  color: #f1f1f1;
+  text-decoration: none;
+  padding: 10px 15px;
+  font-size: 1em;
+  display: block;
+}
+
+.nav-links a:hover {
+  background-color: #555;
+  border-radius: 5px;
+}

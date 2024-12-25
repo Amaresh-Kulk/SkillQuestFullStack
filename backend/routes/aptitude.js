@@ -18,10 +18,10 @@ router.get('/', async (req, res) => {
 
 // Add a new aptitude question (admin only)
 router.post('/', async (req, res) => {
-    const { difficulty, questionText, options } = req.body;
+    const { difficulty, questionText, options, explanation } = req.body;
 
     try {
-        const newQuestion = new Aptitude({ difficulty, questionText, options });
+        const newQuestion = new Aptitude({ difficulty, questionText, options, explanation });
         await newQuestion.save();
         res.status(201).json(newQuestion);
     } catch (err) {

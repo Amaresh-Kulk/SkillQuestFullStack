@@ -23,27 +23,24 @@ const Navbar = () => {
 
     return (
         <nav role="navigation" aria-label="Main Navigation">
-            <h1>Interview Prep</h1>
-            <ul>
-                <li>
-                    <Link to="/" aria-label="Go to Home Page">Home</Link>
-                </li>
-                <li>
-                    <Link to="/login" aria-label="Login to your account">Login</Link>
-                </li>
-                <li>
-                    <Link to="/register" aria-label="Register a new account">Register</Link>
-                </li>
-                <li>
-                    <Link to="/dashboard/profile" aria-label="View your profile">Profile</Link>
-                </li>
-                <li>
-                    <Link to="/dashboard/aptitude" aria-label="Access aptitude questions">Aptitude</Link>
-                </li>
-                <li>
-                    <Link to="/dashboard/coding" aria-label="Access coding questions">Coding</Link>
-                </li>
-            </ul>
+            <div className="navbar-container">
+                {/* Left Section */}
+                <div className="navbar-left">
+                    <Link to="/" aria-label="Go to Home Page">SkillQuest</Link>
+                </div>
+
+                {/* Right Section (Navigation Links) */}
+                <div className="navbar-right">
+                    <div className="nav-links">
+                        <Link to="/" aria-label="Go to Home Page">Home</Link>
+                        <Link to="/login" aria-label="Login to your account">Login</Link>
+                        <Link to="/register" aria-label="Register a new account">Register</Link>
+                        <Link to="/dashboard/profile" aria-label="View your profile">Profile</Link>
+                        <Link to="/dashboard/aptitude" aria-label="Access aptitude questions">Aptitude</Link>
+                        <Link to="/dashboard/coding" aria-label="Access coding questions">Coding</Link>
+                    </div>
+                </div>
+            </div>
         </nav>
     );
 };
