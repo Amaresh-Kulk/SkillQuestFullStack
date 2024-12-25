@@ -89,7 +89,6 @@ const CodingList = () => {
     }
   };
 
-
   return (
     <div className="coding-list-container">
       <h2 className="page-title">Coding Questions</h2>
@@ -115,61 +114,68 @@ const CodingList = () => {
       ) : error ? (
         <p className="error-message">{error}</p>
       ) : questions.length > 0 ? (
-        <div className="questions-container">
-          {questions.map((question) => (
-            <div key={question._id} className="question-card">
-              <h3>{question.questionText}</h3>
-              <p><strong>Category:</strong> {question.category}</p>
-              <p><strong>Difficulty:</strong> {question.difficulty}</p>
-              <p><strong>Constraints:</strong> {question.constraints}</p>
-              <h4>Example</h4>
-              {question.example && (
-                <>
-                  <p><strong>Input:</strong> {question.example.input}</p>
-                  <p><strong>Output:</strong> {question.example.output}</p>
-                </>
-              )}
-              <button onClick={() => handleSelectQuestion(question)} className="edit-button">
-                Edit Solution
-              </button>
-              {selectedQuestion && selectedQuestion._id === question._id && (
-                <>
-                  <MonacoEditor
-                    value={selectedQuestion.solution || ''}
-                    onChange={handleCodeChange}
-                    language="javascript"
-                    theme="vs-dark"
-                    height="400px"
-                    options={{ selectOnLineNumbers: true, minimap: { enabled: false } }}
-                  />
-                  <button onClick={handleExecuteCode} className="execute-button">
-                    Execute Code
-                  </button>
-                  {executionResult && (
-                    <div className="execution-results">
-                      <h4>Execution Results:</h4>
-                      {executionResult.error ? (
-                        <p className="error-message">{executionResult.error}</p>
-                      ) : (
-                        executionResult.map((result, index) => (
-                          <div key={index}>
-                            <p><strong>Test Case {index + 1}:</strong></p>
-                            <p><strong>Input:</strong> {result.input}</p>
-                            <p><strong>Expected Output:</strong> {result.expectedOutput}</p>
-                            <p><strong>Your Output:</strong> {result.actualOutput}</p>
-                            <p><strong>Status:</strong> {result.passed ? 'Passed' : 'Failed'}</p>
-                          </div>
-                        ))
-                      )}
-                    </div>
+        <div className="coding-content">
+          {/* Question List on the left */}
+          <div className="question-list">
+            {questions.map((question) => (
+              <div key={question._id} className="question-card">
+                <h3>{question.questionText}</h3>
+                <p><strong>Category:</strong> {question.category}</p>
+                <p><strong>Difficulty:</strong> {question.difficulty}</p>
+                <p><strong>Constraints:</strong> {question.constraints}</p>
+                <h4>Example</h4>
+                {question.example && (
+                  <>
+                    <p><strong>Input:</strong> {question.example.input}</p>
+                    <p><strong>Output:</strong> {question.example.output}</p>
+                  </>
+                )}
+                <button onClick={() => handleSelectQuestion(question)} className="edit-button">
+                  Edit Solution
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Monaco Editor on the right */}
+          {selectedQuestion && (
+            <div className="editor-container">
+              <div className="editor-section">
+                <MonacoEditor
+                  value={selectedQuestion.solution || ''}
+                  onChange={handleCodeChange}
+                  language="javascript"
+                  theme="vs-dark"
+                  height="400px"
+                  options={{ selectOnLineNumbers: true, minimap: { enabled: false } }}
+                />
+                <button onClick={handleExecuteCode} className="execute-button">
+                  Execute Code
+                </button>
+              </div>
+              {executionResult && (
+                <div className="execution-results">
+                  <h4>Execution Results:</h4>
+                  {executionResult.error ? (
+                    <p className="error-message">{executionResult.error}</p>
+                  ) : (
+                    executionResult.map((result, index) => (
+                      <div key={index}>
+                        <p><strong>Test Case {index + 1}:</strong></p>
+                        <p><strong>Input:</strong> {result.input}</p>
+                        <p><strong>Expected Output:</strong> {result.expectedOutput}</p>
+                        <p><strong>Your Output:</strong> {result.actualOutput}</p>
+                        <p><strong>Status:</strong> {result.passed ? 'Passed' : 'Failed'}</p>
+                      </div>
+                    ))
                   )}
-                </>
+                </div>
               )}
             </div>
-          ))}
+          )}
         </div>
       ) : (
-        <p>No coding questions available for "{selectedDifficulty}" difficulty.</p>
+        <p className="no-questions-message">No coding questions available for "{selectedDifficulty}" difficulty.</p>
       )}
     </div>
   );

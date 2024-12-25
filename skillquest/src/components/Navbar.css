@@ -1,57 +1,93 @@
-/* General navbar styling */
-nav {
-  background-color: #333; /* Dark background for the navbar */
-  padding: 10px 20px;
-  width: 100%; /* Full width */
-}
-
-/* Navbar Container */
-.navbar-container {
+/* Dark Mode Navbar */
+.navbar {
+  height: 35px;
+  background-color: #1e1e2f; /* Dark background */
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  max-width: 1200px;  /* Max width for the container */
-  margin: 0 auto;     /* Center the container */
-  width: 100%;        /* Full width of the screen */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.8); /* Slightly darker shadow */
+  padding: 10px;
+  color: #ffffff; /* White text color */
 }
 
-/* Left Section (SkillQuest) */
-.navbar-left {
-  flex: 0; /* Only take as much width as needed */
+/* Left Navigation Section */
+.left-nav {
+  width: 300px;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  margin: 10px 50px 10px 10px;
+  color: #ffffff;
 }
 
-.navbar-left a {
-  color: #f1f1f1;
-  font-size: 1.8em;
-  text-decoration: none;
-  margin-left: 10px;
+.left-nav img {
+  width: 90px;
+  height: 40px;
+  filter: grayscale(1) brightness(0.8); /* Slightly dimmer logo */
+  margin-top: -10px;
+  cursor: pointer;
 }
 
-.navbar-left a:hover {
-  text-decoration: underline;
-}
-
-/* Right Section (Navigation Links) */
-.navbar-right {
+/* Right Navigation Section */
+.right-nav {
+  width: 300px;
   display: flex;
-  justify-content: flex-end;
-  flex: 1;  /* Allow this section to take the remaining space */
+  justify-content: space-between;
+  margin: 2px 50px 0 10px;
+  padding: 5px 15px;
 }
 
-.nav-links {
-  display: flex;
-  align-items: center;
+.right-nav div {
+  cursor: pointer;
+  position: relative;
+  color: #ffffff;
 }
 
-.nav-links a {
-  color: #f1f1f1;
+.right-nav i {
+  font-size: 20px;
+  color: #d1d5db; /* Light gray for icons */
+}
+
+/* Tooltip Styling */
+.tooltip {
+  position: absolute;
+  background-color: #2a2a3d; /* Dark tooltip background */
+  color: #ffffff; /* White text */
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  bottom: -25px;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.right-nav div:hover .tooltip {
+  opacity: 1;
+}
+
+/* Sign In Button */
+.no-underline-signin {
   text-decoration: none;
-  padding: 10px 15px;
-  font-size: 1em;
-  display: block;
+  padding: 5px;
+  background-color: #3b82f6; /* Blue button */
+  color: #ffffff;
+  border-radius: 4px;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 15px;
+  transition: background-color 0.2s ease-in-out;
 }
 
-.nav-links a:hover {
-  background-color: #555;
-  border-radius: 5px;
+.no-underline-signin:hover {
+  background-color: #2563eb; /* Darker blue on hover */
+}
+
+/* Performance Section */
+.performance-icon {
+  text-align: center;
 }

@@ -2,9 +2,9 @@
 .aptitude-container {
   font-family: Arial, sans-serif;
   padding: 20px;
-  width: 1100px; /* Fixed width for the whole aptitude page */
+  width: 1110px; /* Fixed width for the whole aptitude page */
   margin: 0 auto; /* Center the container horizontally */
-  margin-left: 40px;
+  margin-left: 90px;
   background-color: #1e1e1e; /* Dark background */
   color: #f1f1f1; /* Lighter text */
   border-radius: 10px;
@@ -13,6 +13,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin-top: 80px;
+  margin-bottom: 200px;
 }
 
 /* Categories Section */
@@ -56,6 +58,7 @@
   transition: background-color 0.3s;
   width: 80%; /* Button takes 80% of the list item width */
   margin: 0 auto; /* Centers the button inside the li */
+  
 }
 
 /* Hover Effect for Buttons */

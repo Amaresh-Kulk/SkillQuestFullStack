@@ -1,107 +1,119 @@
+/* Main container */
 .coding-list-container {
-  padding: 20px;
   font-family: Arial, sans-serif;
+  padding: 20px;
+  width: 1110px; /* Fixed width for the whole coding page */
+  margin: 0 auto; /* Center the container horizontally */
+  margin-top: 80px;
+  background-color: #1e1e1e; /* Dark background */
+  color: #f1f1f1; /* Lighter text */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .page-title {
-  text-align: center;
-  color: #333;
-  font-size: 2rem;
+  font-size: 2em;
+  color: #f1f1f1;
   margin-bottom: 20px;
 }
 
 .difficulty-selector {
-  text-align: center;
+  width: 100%;
   margin-bottom: 20px;
 }
 
 .difficulty-list {
   display: flex;
-  gap: 10px;
-  justify-content: center;
-  list-style: none;
+  justify-content: space-between;
+  list-style-type: none;
   padding: 0;
 }
 
 .difficulty-button {
-  padding: 8px 15px;
-  background-color: #007bff;
-  color: white;
+  padding: 10px 20px;
+  background-color: #333;
+  color: #fff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.difficulty-button:hover {
+  background-color: #555;
 }
 
 .difficulty-button.active {
-  background-color: #0056b3;
+  background-color: #4CAF50;
 }
 
-.loading-text, .error-message, .no-questions-message {
-  text-align: center;
-  color: #999;
-  font-size: 1.2rem;
-}
-
-.questions-container {
+.coding-content {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.question-list {
+  width: 48%; /* Take up nearly half the container */
 }
 
 .question-card {
-  background-color: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #ddd;
+  background-color: #222;
+  padding: 20px;
+  border-radius: 5px;
+  margin-bottom: 20px;
 }
 
 .question-card h3 {
   margin-top: 0;
-  font-size: 1.6rem;
 }
 
 .edit-button {
-  margin-top: 15px;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
+  background-color: #333;
+  color: #fff;
   border: none;
+  padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.monaco-editor {
-  margin-top: 15px;
-  width: 100%;
-  border: 1px solid #ddd;
+.edit-button:hover {
+  background-color: #555;
+}
+
+.editor-container {
+  width: 48%; /* Take up nearly half the container */
+}
+
+.editor-section {
+  background-color: #222;
+  padding: 20px;
   border-radius: 5px;
 }
 
 .execute-button {
-  margin-top: 15px;
-  padding: 10px 20px;
-  background-color: #28a745;
-  color: white;
+  background-color: #4CAF50;
+  color: #fff;
   border: none;
+  padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.execute-button:hover {
+  background-color: #45a049;
 }
 
 .execution-results {
-  margin-top: 15px;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #f8f9fa;
-}
-
-.execution-results pre {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  font-size: 14px;
-  color: #333;
+  margin-top: 20px;
 }
 
 .error-message {
@@ -109,7 +121,7 @@
 }
 
 .no-questions-message {
-  color: #007bff;
   text-align: center;
-  font-size: 1.2rem;
+  color: #f1f1f1;
+  margin-top: 20px;
 }

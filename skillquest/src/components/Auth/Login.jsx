@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import './styles/Login.css'; // Ensure this path is correct
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -13,23 +14,20 @@ const Login = () => {
         setMessage('');
 
         try {
-            // Send login request
             const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/login`, {
                 email,
                 password,
             },
-        {
-            withCredentials: true
-        });
+            {
+                withCredentials: true,
+            });
 
-            // Store token and user data in localStorage
             const { token, user } = res.data;
             localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user)); // Store user details for future use
+            localStorage.setItem('user', JSON.stringify(user));
 
             setMessage('Login successful!');
         } catch (err) {
-            // Error handling for API response
             if (err.response && err.response.data && err.response.data.error) {
                 setMessage(err.response.data.error);
             } else {
@@ -41,34 +39,52 @@ const Login = () => {
     };
 
     return (
-        <div>
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit}>
-                <label htmlFor="email">Email:</label>
-                <input
-                    id="email"
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <label htmlFor="password">Password:</label>
-                <input
-                    id="password"
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Login'}
+        <div className="login">
+            <div className="heading">
+                <h1>Sign in to your account</h1>
+                <p>
+                    Don't have an account? <a href="/register">Sign up</a>
+                </p>
+            </div>
+            <form onSubmit={handleSubmit} className="login-form">
+                <div className="form-group">
+                    <label htmlFor="email">Email</label>
+                    <input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="password">Password</label>
+                    <input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <input type="checkbox" id="remember" />
+                    <label htmlFor="remember">Remember Me</label>
+                </div>
+                {message && (
+                    <p className={`message ${message.includes('successful') ? 'success' : 'error'}`}>
+                        {message}
+                    </p>
+                )}
+                <button type="submit" className="btn-primary" disabled={loading}>
+                    {loading ? 'Logging in...' : 'Sign In'}
                 </button>
+                <p className="forgot-password">
+                    <a href="/ForgotPassword">Forgot your password?</a>
+                </p>
             </form>
-            {message && <p className={`message ${message.includes('successful') ? 'success' : 'error'}`}>
-                {message}
-            </p>}
         </div>
     );
 };
