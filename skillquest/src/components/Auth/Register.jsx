@@ -1,79 +1,104 @@
-
-//components/Auth/Register.jsx
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [formData, setFormData] = useState({
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+    });
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();  // Use navigate hook for redirect
+    const navigate = useNavigate();
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setMessage('');
+        const { username, email, password, confirmPassword } = formData;
+
+        if (password !== confirmPassword) {
+            setMessage('Passwords do not match.');
+            return;
+        }
+
+        setLoading(true);
 
         try {
-            const res = await axios.post('http://localhost:8000/api/users/register', { username, email, password });
-            setMessage('Registration successful! You can now log in.');
+            const res = await axios.post(
+                'http://localhost:8000/api/users/register',
+                { username, email, password },
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            );
 
-            // After successful registration, automatically log in the user
-            const loginRes = await axios.post('http://localhost:8000/api/users/login', { email, password });
-            localStorage.setItem('token', loginRes.data.token); // Store the token in localStorage
+            setMessage('Registration successful! Logging you in...');
 
-            // Redirect the user to the Profile page after login
+            const loginRes = await axios.post(
+                'http://localhost:8000/api/users/login',
+                { email, password },
+                { withCredentials: true }
+            );
+
+            localStorage.setItem('token', loginRes.data.token);
+
             navigate('/dashboard/profile');
         } catch (err) {
-            if (err.response && err.response.data && err.response.data.error) {
-                setMessage(err.response.data.error);
-            } else {
-                setMessage('Error registering. Please try again later.');
-            }
+            setMessage(err.response?.data?.msg || 'Error registering. Please try again later.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div>
+        <div className="register-container">
             <h2>Register</h2>
             <form onSubmit={handleSubmit}>
-                <label htmlFor="username">Username:</label>
+                <label>Username:</label>
                 <input
-                    id="username"
                     type="text"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
                     required
                 />
-                <label htmlFor="email">Email:</label>
+                <label>Email:</label>
                 <input
-                    id="email"
                     type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     required
                 />
-                <label htmlFor="password">Password:</label>
+                <label>Password:</label>
                 <input
-                    id="password"
                     type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                />
+                <label>Confirm Password:</label>
+                <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
                     required
                 />
                 <button type="submit" disabled={loading}>
                     {loading ? 'Registering...' : 'Register'}
                 </button>
             </form>
-            {message && <p>{message}</p>}
+            {message && (
+                <p className={message.includes('successful') ? 'success' : 'error'}>{message}</p>
+            )}
         </div>
     );
 };

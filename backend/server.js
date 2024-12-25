@@ -20,8 +20,9 @@ const PORT = 8000;
 app.use(cookieParser());
 // Middleware
 app.use(cors({
-  origin: '*', // Allow all origins for testing; restrict in production
+  origin: 'http://localhost:5173', // Allow all origins for testing; restrict in production
   methods: ['GET', 'POST'],
+  credentials: true
 }));
 
 app.use(bodyParser.json());
@@ -34,6 +35,7 @@ const codingRouter = require("./routes/coding");
 const runCodeRouter = require("./routes/runCode"); // Add runCode route
 const testCaseRouter = require("./routes/testcase");
 const usersRouter = require("./routes/users");
+const mainFunctionRoutes = require('./routes/MainFunction'); // Adjust path if necessary
 
 connectDB();
 
@@ -55,6 +57,7 @@ app.use("/api/aptitude", aptitudeRouter); // Aptitude-related operations
 app.use("/api/coding", codingRouter); // Coding-related operations
 app.use("/api/testcases", testCaseRouter); // Test case-related operations
 app.use("/api/runcode", runCodeRouter);
+app.use('/api/mainFunctions', mainFunctionRoutes);
 
 // Start the server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

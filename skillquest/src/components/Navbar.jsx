@@ -1,12 +1,6 @@
-// components/Auth/Navbar.jsx
 import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
-// Updated import for jwt-decode
-// import jwtDecode from 'jwt-decode'; // Use this if the default export works
-// Alternatively, try this if the default export throws an error:
-// import { decode as jwtDecode } from 'jwt-decode';
-import * as jwtDecode from 'jwt-decode';
-
+import * as jwtDecode from 'jwt-decode'; // Wildcard import
 
 const Navbar = () => {
     useEffect(() => {
@@ -14,7 +8,7 @@ const Navbar = () => {
 
         if (token) {
             try {
-                const decoded = jwtDecode.default(token); // Access the default export
+                const decoded = jwtDecode.default(token); // Access the default function
                 const isTokenValid = decoded.exp * 1000 > Date.now(); // Check expiration time
 
                 if (!isTokenValid) {

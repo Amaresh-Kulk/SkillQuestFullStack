@@ -1,94 +1,66 @@
 const express = require('express');
 const { exec } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const Submission = require('../models/Submission'); // Import the Submission model
-
+const TestCase = require('../models/TestCase'); // Ensure proper model import
 const router = express.Router();
 
-router.use(bodyParser.json());
-router.use(cors());
+// Map difficulty to scores
+const difficultyScores = {
+    easy: 2,
+    medium: 4,
+    hard: 8,
+};
 
-const TMP_FOLDER = './tmp';
-
-// Ensure temporary folder exists
-if (!fs.existsSync(TMP_FOLDER)) {
-    fs.mkdirSync(TMP_FOLDER);
-}
-
-// Endpoint to run user code
+// Run code endpoint
 router.post('/run', async (req, res) => {
-    console.log('Request received:', req.body);
-
-    const { code, language, userId, questionId, testCases } = req.body;
-
-    if (!code || !language) {
-        return res.status(400).json({ error: 'Code and language are required.' });
-    }
-
-    const fileExtensions = {
-        javascript: 'js',
-        python: 'py',
-        java: 'java',
-    };
-
-    const fileExtension = fileExtensions[language.toLowerCase()];
-
-    if (!fileExtension) {
-        return res.status(400).json({ error: 'Unsupported language.' });
-    }
-
-    const fileName = `code_${Date.now()}.${fileExtension}`;
-    const filePath = path.join(TMP_FOLDER, fileName);
-
-    // Write code to a temporary file
-    fs.writeFileSync(filePath, code);
-
-    let command = '';
-    if (language === 'javascript') {
-        command = `node ${filePath}`;
-    } else if (language === 'python') {
-        command = `python ${filePath}`;
-    } else if (language === 'java') {
-        const className = fileName.replace('.java', '');
-        command = `javac ${filePath} && java ${className}`;
-    }
-
-    // Execute the command
-    exec(command, async (error, stdout, stderr) => {
-        // Cleanup temporary file
-        fs.unlinkSync(filePath);
-
-        const output = error || stderr ? stderr || 'Error executing the code.' : stdout.trim();
-
-        // Check if test cases are provided and validate against the output
-        let testResults = [];
-        if (testCases && Array.isArray(testCases)) {
-            testResults = testCases.map(testCase => {
-                const expectedOutput = testCase.output;
-                const result = (stdout.trim() === expectedOutput) ? 'Pass' : 'Fail';
-                return { input: testCase.input, expectedOutput, actualOutput: stdout.trim(), result };
-            });
+    const { question_id, code } = req.body;
+    // console.log(question_id);
+    try {
+        // Fetch the test cases for the given question ID
+        const questionTestCases = await TestCase.findOne({ question_id: question_id });
+        console.log(questionTestCases);
+        if (!questionTestCases || questionTestCases.testCases.length === 0) {
+            return res.status(404).json({ error: 'No test cases found for the given question.' });
         }
 
-        // Save the submission to the database
-        const submission = new Submission({
-            userId,
-            questionId,
-            code,
-            language,
-            output,
-            testResults, // Save test case results if provided
-            error: error || stderr ? output : null,
+        const testCases = questionTestCases.testCases;
+        const results = [];
+        let passedCount = 0;
+
+        // Execute test cases sequentially (or parallel based on language support)
+        for (const testCase of testCases) {
+            const { input, expectedOutput } = testCase;
+
+            // Command to execute code (Adjust based on language and setup)
+            const command = `echo "${input}" | node -e "${code}"`; // Adjust for JavaScript
+
+            // Run the code with test case input
+            const output = await new Promise((resolve, reject) => {
+                exec(command, (err, stdout, stderr) => {
+                    if (err) reject(stderr);
+                    resolve(stdout.trim());
+                });
+            });
+
+            // Compare output with expected output
+            const passed = output === expectedOutput;
+            if (passed) passedCount++;
+            results.push({ input, expectedOutput, output, passed });
+        }
+
+        // Calculate score
+        const score = passedCount === testCases.length ? difficultyScores[question.difficulty] : 0;
+
+        res.json({
+            passedCount,
+            totalTestCases: testCases.length,
+            results,
+            score,
+            success: passedCount === testCases.length,
         });
-
-        await submission.save();
-
-        // Respond with the execution result
-        res.json({ output, testResults });
-    });
+    } catch (err) {
+        console.error('Error during code execution:', err);
+        res.status(500).json({ error: 'Error executing code.' });
+    }
 });
 
 module.exports = router;

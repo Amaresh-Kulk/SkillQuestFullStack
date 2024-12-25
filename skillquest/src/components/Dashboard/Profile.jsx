@@ -1,4 +1,3 @@
-//components/Dashboard/Profile.jsx
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -13,24 +12,26 @@ const Profile = () => {
         const fetchProfile = async () => {
             setLoading(true);
             setError(null);
+
             const token = localStorage.getItem('token');
 
             if (!token) {
-                navigate('/login'); // Redirect to login if no token found
+                navigate('/login'); // Redirect to login if no token is found
                 return;
             }
 
             try {
                 const res = await axios.get('http://localhost:8000/api/users/me', {
+                    withCredentials: true, // Ensure cookies are sent
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                      },
-                });                
+                        Authorization: `Bearer ${token}`, // Add token to headers
+                    },
+                });
                 setUser(res.data);
             } catch (err) {
                 console.error('Error fetching user profile:', err);
                 setError('Failed to load profile. Please try again later.');
-                if (err.response && err.response.status === 401) {
+                if (err.response?.status === 401) {
                     localStorage.removeItem('token');
                     navigate('/login'); // Redirect to login on unauthorized
                 }
@@ -56,12 +57,16 @@ const Profile = () => {
                     {user.scores && (
                         <div>
                             <h3>Scores</h3>
-                            {user.scores.aptitude != null && <p><strong>Aptitude:</strong> {user.scores.aptitude}</p>}
-                            {user.scores.coding != null && <p><strong>Coding:</strong> {user.scores.coding}</p>}
+                            {user.scores.aptitude != null && (
+                                <p><strong>Aptitude:</strong> {user.scores.aptitude}</p>
+                            )}
+                            {user.scores.coding != null && (
+                                <p><strong>Coding:</strong> {user.scores.coding}</p>
+                            )}
                         </div>
                     )}
 
-                    {user.performanceMetrics && user.performanceMetrics.length > 0 && (
+                    {user.performanceMetrics && user.performanceMetrics.length > 0 ? (
                         <div>
                             <h3>Performance Metrics</h3>
                             <ul>
@@ -69,15 +74,19 @@ const Profile = () => {
                                     <li key={index}>
                                         {metric.section && <p><strong>Section:</strong> {metric.section}</p>}
                                         {metric.score != null && <p><strong>Score:</strong> {metric.score}</p>}
-                                        {metric.date && <p><strong>Date:</strong> {new Date(metric.date).toLocaleDateString()}</p>}
+                                        {metric.date && (
+                                            <p>
+                                                <strong>Date:</strong>{' '}
+                                                {new Date(metric.date).toLocaleDateString()}
+                                            </p>
+                                        )}
                                     </li>
                                 ))}
                             </ul>
                         </div>
+                    ) : (
+                        <p>No performance metrics available.</p>
                     )}
-
-                    {/* Display a message if no performance metrics */}
-                    {!user.performanceMetrics?.length && <p>No performance metrics available.</p>}
                 </div>
             )}
         </div>

@@ -3,8 +3,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-const { check, validationResult } = require('express-validator'); // For input validation
+const { check, validationResult } = require('express-validator');
+
 const router = express.Router();
+
 // Register a user
 router.post(
     '/register',
@@ -15,13 +17,17 @@ router.post(
     ],
     async (req, res) => {
         const errors = validationResult(req);
-        if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
 
         const { username, email, password } = req.body;
 
         try {
             let user = await User.findOne({ email });
-            if (user) return res.status(400).json({ msg: 'User already exists' });
+            if (user) {
+                return res.status(400).json({ msg: 'User already exists' });
+            }
 
             user = new User({ username, email, password });
 
@@ -32,10 +38,16 @@ router.post(
             await user.save();
 
             const payload = { user: { id: user.id } };
-            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY || '1h' }, (err, token) => {
-                if (err) throw err;
-                res.json({ token });
-            });
+
+            jwt.sign(
+                payload,
+                process.env.JWT_SECRET,
+                { expiresIn: process.env.JWT_EXPIRY || '1h' },
+                (err, token) => {
+                    if (err) throw err;
+                    res.json({ token });
+                }
+            );
         } catch (err) {
             console.error(err.message);
             res.status(500).send('Server error');
@@ -71,7 +83,13 @@ router.post(
             //     // res.json({ token });
             // });
 
-            res.cookie('token', token);
+            // Set cookie with the token
+            res.cookie('token', token, {
+                httpOnly: true, // Prevent access from client-side scripts
+            secure: process.env.NODE_ENV === 'production', // Use secure in production
+            sameSite: 'Lax', // CSRF protection
+            maxAge: 3600000, // 1 hour
+            });
             res.status(200).json({ success: true, message: "User logged in successfully" });
         } catch (err) {
             console.error(err.message);

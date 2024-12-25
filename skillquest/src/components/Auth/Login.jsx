@@ -17,7 +17,10 @@ const Login = () => {
             const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/users/login`, {
                 email,
                 password,
-            });
+            },
+        {
+            withCredentials: true
+        });
 
             // Store token and user data in localStorage
             const { token, user } = res.data;

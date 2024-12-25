@@ -1,10 +1,11 @@
+//routes/testcase.js
 const express = require('express');
 const TestCase = require('../models/TestCase'); // Ensure proper model import
 const auth = require('../middleware/auth'); // Authentication middleware
 const router = express.Router();
 
 // Fetch test cases by question_id
-router.get('/:question_id', async (req, res) => {
+router.get('/', async (req, res) => {
     const { question_id } = req.params;
 
     try {
