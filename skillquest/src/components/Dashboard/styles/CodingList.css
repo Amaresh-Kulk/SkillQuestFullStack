@@ -2,98 +2,83 @@
 .coding-list-container {
   font-family: Arial, sans-serif;
   padding: 20px;
-  width: 1110px; /* Fixed width for the whole coding page */
-  margin: 0 auto; /* Center the container horizontally */
-  margin-top: 80px;
+  /* width: 90%; Adjusted width for better responsiveness */
+  /* max-width: 1200px; Max width of the page */
+  margin: 80px auto;
   background-color: #1e1e1e; /* Dark background */
   color: #f1f1f1; /* Lighter text */
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  overflow: hidden; /* Prevent overflowing */
+  margin-left: 42px;
 }
 
 .page-title {
   font-size: 2em;
   color: #f1f1f1;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .difficulty-selector {
   width: 100%;
   margin-bottom: 20px;
-}
-
-.difficulty-list {
   display: flex;
-  justify-content: space-between;
-  list-style-type: none;
-  padding: 0;
+  justify-content: center;
+  gap: 15px; /* Space between difficulty buttons */
 }
 
-.difficulty-button {
-  padding: 10px 20px;
-  background-color: #333;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.difficulty-button:hover {
-  background-color: #555;
-}
-
-.difficulty-button.active {
-  background-color: #4CAF50;
-}
-
+/* Coding content layout using Grid */
 .coding-content {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 600px 600px; /* Two equal columns for question list and Monaco editor */
+  gap: 20px; /* Space between the columns */
   width: 100%;
+  overflow: hidden; /* Prevent overflow */
 }
 
-.question-list {
-  width: 48%; /* Take up nearly half the container */
-}
-
-.question-card {
+.question-list-container,
+.editor-container {
   background-color: #222;
   padding: 20px;
   border-radius: 5px;
-  margin-bottom: 20px;
-}
-
-.question-card h3 {
-  margin-top: 0;
-}
-
-.edit-button {
-  background-color: #333;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.edit-button:hover {
-  background-color: #555;
+  box-sizing: border-box; /* Ensure padding doesn't affect width */
+  overflow: hidden; /* Prevent overflow */
 }
 
 .editor-container {
-  width: 48%; /* Take up nearly half the container */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.editor-section {
-  background-color: #222;
-  padding: 20px;
+.navigation-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px; /* Space between navigation buttons */
+  margin-top: 20px;
+}
+
+.navigation-button {
+  padding: 10px 20px;
+  background-color: #333;
+  color: #fff;
+  border: none;
   border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.navigation-button:hover {
+  background-color: #555;
+}
+
+.navigation-button:disabled {
+  background-color: #777;
+  cursor: not-allowed;
 }
 
 .execute-button {
@@ -104,24 +89,33 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
-  width: 100%;
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .execute-button:hover {
   background-color: #45a049;
 }
 
+/* Question card */
+.question-card {
+  background-color: #2a2a2a;
+  padding: 20px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  word-wrap: break-word; /* Ensure text wraps properly */
+  overflow-y: auto; /* Enable vertical scrolling when content overflows */
+  max-height: 500px; /* Set a maximum height to trigger scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+
 .execution-results {
   margin-top: 20px;
 }
 
-.error-message {
-  color: red;
-}
-
-.no-questions-message {
-  text-align: center;
-  color: #f1f1f1;
-  margin-top: 20px;
+/* Ensure Monaco editor doesn't overflow */
+.monaco-editor {
+  max-width: 100%;
+  overflow: hidden;
+  word-wrap: break-word; /* Ensure the editor content wraps correctly */
 }

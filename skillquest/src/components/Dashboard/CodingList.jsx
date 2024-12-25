@@ -1,16 +1,26 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import MonacoEditor from '@monaco-editor/react';
+import './styles/CodingList.css';
 
 const CodingList = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState('medium');
-  const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [executionResult, setExecutionResult] = useState(null);
   const [predefinedMainFunction, setPredefinedMainFunction] = useState('');
+  const [score, setScore] = useState(0);
+  const [totalScore, setTotalScore] = useState(0);
   const difficulties = ['easy', 'medium', 'hard'];
+
+  // Difficulty marks
+  const difficultyMarks = {
+    easy: 2,
+    medium: 4,
+    hard: 8,
+  };
 
   // Fetch the predefined main function
   useEffect(() => {
@@ -32,6 +42,7 @@ const CodingList = () => {
     try {
       const res = await axios.get(`http://localhost:8000/api/coding?difficulty=${difficulty}`);
       setQuestions(res.data || []);
+      setCurrentQuestionIndex(0); // Reset to the first question
     } catch (err) {
       console.error('Error fetching coding questions:', err);
       setError('Failed to load coding questions. Please try again later.');
@@ -48,31 +59,26 @@ const CodingList = () => {
     setSelectedDifficulty(difficulty);
   };
 
-  const handleSelectQuestion = (question) => {
-    setSelectedQuestion(question);
-    setExecutionResult(null);
-  };
-
   const handleCodeChange = (newCode) => {
-    if (selectedQuestion) {
-      setSelectedQuestion((prevQuestion) => ({
-        ...prevQuestion,
-        solution: newCode,
-      }));
+    if (questions[currentQuestionIndex]) {
+      const updatedQuestions = [...questions];
+      updatedQuestions[currentQuestionIndex].solution = newCode;
+      setQuestions(updatedQuestions);
     }
   };
 
   const handleExecuteCode = async () => {
-    if (!selectedQuestion || !predefinedMainFunction) return;
+    if (!questions[currentQuestionIndex] || !predefinedMainFunction) return;
 
-    const userCode = selectedQuestion.solution;
-    const testCases = selectedQuestion.testCases;
+    const currentQuestion = questions[currentQuestionIndex];
+    const userCode = currentQuestion.solution;
+    const testCases = currentQuestion.testCases;
 
     const fullCode = `
       ${userCode}
       ${predefinedMainFunction}
       const testCases = ${JSON.stringify(testCases)};
-      const userFunction = ${selectedQuestion.functionName}; // Replace with function name
+      const userFunction = ${currentQuestion.functionName}; // Replace with function name
       runTestCases(userFunction, testCases);
     `;
 
@@ -82,101 +88,112 @@ const CodingList = () => {
         language: 'javascript',
       });
 
-      setExecutionResult(response.data);
+      // Compare the output with test cases
+      const testResults = response.data;
+      setExecutionResult(testResults);
+
+      // Calculate score
+      const questionDifficulty = currentQuestion.difficulty;
+      const currentScore = difficultyMarks[questionDifficulty];
+      setScore(currentScore);
+      setTotalScore((prevScore) => prevScore + currentScore);
     } catch (err) {
       console.error('Error executing code:', err);
       setExecutionResult({ error: 'Failed to execute the code. Please try again.' });
     }
   };
 
+  const handlePrevious = () => {
+    setCurrentQuestionIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
+
+  const handleNext = () => {
+    setCurrentQuestionIndex((prevIndex) => Math.min(prevIndex + 1, questions.length - 1));
+  };
+
+  const currentQuestion = questions[currentQuestionIndex];
+
   return (
     <div className="coding-list-container">
       <h2 className="page-title">Coding Questions</h2>
 
       <div className="difficulty-selector">
-        <h3>Select Difficulty:</h3>
-        <ul className="difficulty-list">
-          {difficulties.map((difficulty) => (
-            <li key={difficulty}>
-              <button
-                className={`difficulty-button ${difficulty === selectedDifficulty ? 'active' : ''}`}
-                onClick={() => handleDifficultyChange(difficulty)}
-              >
-                {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-              </button>
-            </li>
-          ))}
-        </ul>
+        {difficulties.map((difficulty) => (
+          <button
+            key={difficulty}
+            className={`difficulty-button ${difficulty === selectedDifficulty ? 'active' : ''}`}
+            onClick={() => handleDifficultyChange(difficulty)}
+          >
+            {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+          </button>
+        ))}
       </div>
 
       {loading ? (
         <p>Loading coding questions...</p>
       ) : error ? (
         <p className="error-message">{error}</p>
-      ) : questions.length > 0 ? (
+      ) : (
         <div className="coding-content">
-          {/* Question List on the left */}
-          <div className="question-list">
-            {questions.map((question) => (
-              <div key={question._id} className="question-card">
-                <h3>{question.questionText}</h3>
-                <p><strong>Category:</strong> {question.category}</p>
-                <p><strong>Difficulty:</strong> {question.difficulty}</p>
-                <p><strong>Constraints:</strong> {question.constraints}</p>
-                <h4>Example</h4>
-                {question.example && (
-                  <>
-                    <p><strong>Input:</strong> {question.example.input}</p>
-                    <p><strong>Output:</strong> {question.example.output}</p>
-                  </>
-                )}
-                <button onClick={() => handleSelectQuestion(question)} className="edit-button">
-                  Edit Solution
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Monaco Editor on the right */}
-          {selectedQuestion && (
-            <div className="editor-container">
-              <div className="editor-section">
-                <MonacoEditor
-                  value={selectedQuestion.solution || ''}
-                  onChange={handleCodeChange}
-                  language="javascript"
-                  theme="vs-dark"
-                  height="400px"
-                  options={{ selectOnLineNumbers: true, minimap: { enabled: false } }}
-                />
-                <button onClick={handleExecuteCode} className="execute-button">
-                  Execute Code
-                </button>
-              </div>
-              {executionResult && (
-                <div className="execution-results">
-                  <h4>Execution Results:</h4>
-                  {executionResult.error ? (
-                    <p className="error-message">{executionResult.error}</p>
-                  ) : (
-                    executionResult.map((result, index) => (
-                      <div key={index}>
-                        <p><strong>Test Case {index + 1}:</strong></p>
-                        <p><strong>Input:</strong> {result.input}</p>
-                        <p><strong>Expected Output:</strong> {result.expectedOutput}</p>
-                        <p><strong>Your Output:</strong> {result.actualOutput}</p>
-                        <p><strong>Status:</strong> {result.passed ? 'Passed' : 'Failed'}</p>
-                      </div>
-                    ))
-                  )}
-                </div>
+          <div className="question-list-container">
+            <div className="question-card">
+              <h3>{currentQuestion?.questionText}</h3>
+              <p><strong>Category:</strong> {currentQuestion?.category}</p>
+              <p><strong>Difficulty:</strong> {currentQuestion?.difficulty}</p>
+              <p><strong>Constraints:</strong> {currentQuestion?.constraints}</p>
+              <h4>Example</h4>
+              {currentQuestion?.example && (
+                <>
+                  <p><strong>Input:</strong> {currentQuestion.example.input}</p>
+                  <p><strong>Output:</strong> {currentQuestion.example.output}</p>
+                </>
               )}
             </div>
-          )}
+          </div>
+
+          <div className="editor-container">
+            <MonacoEditor
+              value={currentQuestion?.solution || ''}
+              onChange={handleCodeChange}
+              language="javascript"
+              theme="vs-dark"
+              height="400px"
+              options={{ selectOnLineNumbers: true, minimap: { enabled: false } }}
+            />
+            {/* <button onClick={handleExecuteCode} className="execute-button">
+              Execute Code
+            </button> */}
+          </div>
         </div>
-      ) : (
-        <p className="no-questions-message">No coding questions available for "{selectedDifficulty}" difficulty.</p>
       )}
+
+      <div className="navigation-buttons">
+        <button
+          onClick={handlePrevious}
+          className="navigation-button"
+          disabled={currentQuestionIndex === 0}
+        >
+          Previous
+        </button>
+        <button
+          onClick={handleExecuteCode}
+          className="navigation-button"
+        >
+          Execute Code
+        </button>
+        <button
+          onClick={handleNext}
+          className="navigation-button"
+          disabled={currentQuestionIndex === questions.length - 1}
+        >
+          Next
+        </button>
+      </div>
+
+      <div className="score-container">
+        <p><strong>Score for this question:</strong> {score}</p>
+        <p><strong>Total Score:</strong> {totalScore}</p>
+      </div>
     </div>
   );
 };
