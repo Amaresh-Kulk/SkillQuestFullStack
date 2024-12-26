@@ -2,10 +2,11 @@
 .aptitude-container {
   font-family: Arial, sans-serif;
   padding: 20px;
-  width: 1110px; /* Fixed width for the whole aptitude page */
+  width: 1285px; /* Fixed width for the whole aptitude page */
+  /* height: 500px; */
   margin: 0 auto; /* Center the container horizontally */
-  margin-left: 90px;
-  background-color: #1e1e1e; /* Dark background */
+  margin-left: 10px;
+  background-color: #22134d; /*Dark background*/
   color: #f1f1f1; /* Lighter text */
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -50,20 +51,25 @@
 /* Button Style */
 .categories button {
   padding: 15px 30px;
-  background-color: #333; /* Dark button background */
+  background-color: #050c2b; /* Dark button background */
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, border 0.3s;
   width: 80%; /* Button takes 80% of the list item width */
   margin: 0 auto; /* Centers the button inside the li */
+  box-shadow: 2px 2px 2px rgba(172, 151, 151, 0.15);
   
 }
 
 /* Hover Effect for Buttons */
 .categories button:hover {
-  background-color: #555; /* Slightly lighter on hover */
+  background-color: #1f0d85; /* Slightly lighter on hover */
+}
+
+.categories button:active {
+  border: 1px solid grey;
 }
 
 
@@ -94,16 +100,16 @@
 .option-button {
   cursor: pointer;
   padding: 15px 30px;
-  border: 1px solid #444; /* Dark border */
+  border: 1px solid #18095e; /* Dark border */
   border-radius: 5px;
-  background-color: #222; /* Dark background for options */
+  background-color: #0c0b29; /* Dark background for options */
   color: #f1f1f1; /* Light text */
   transition: background-color 0.3s;
   text-align: center;
 }
 
 .option-button.selected {
-  background-color: #4CAF50; /* Green selected background */
+  background-color: #572320; /* Green selected background */
 }
 
 .option-button:hover {
@@ -147,3 +153,32 @@
   text-align: center; /* Center the score */
   color: #f1f1f1; /* Lighter score text */
 }
+
+
+.message {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.message.success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+/* .explanation  {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 50px;
+  margin-right: 800px;
+} */

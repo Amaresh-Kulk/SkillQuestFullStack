@@ -70,13 +70,13 @@ router.post(
 
         try {
             let user = await User.findOne({ email });
-            if (!user) return res.status(400).json({ msg: 'Invalid credentials' });
+            if (!user) return res.status(400).json({ msg: `Invalid email `});
 
             const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
+            if (!isMatch) return res.status(400).json({ msg: `Invalid password `});
 
             const payload = { user: { id: user.id } };
-            const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY || '1h' });
+            const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY || '300h' });
                 // , (err, token) => 
             //     {
             //     if (err) throw err;
@@ -85,12 +85,14 @@ router.post(
 
             // Set cookie with the token
             res.cookie('token', token, {
-                httpOnly: true, // Prevent access from client-side scripts
-            secure: process.env.NODE_ENV === 'production', // Use secure in production
-            sameSite: 'Lax', // CSRF protection
-            maxAge: 3600000, // 1 hour
+                 httpOnly: true, // Prevent access from client-side scripts
+                secure: process.env.NODE_ENV === 'production', // Use secure in production
+                sameSite: 'Lax', // CSRF protection
+                maxAge: 3600000, // 1 hour
             });
-            res.status(200).json({ success: true, message: "User logged in successfully" });
+            
+            // Include the token in the response body
+            res.status(200).json({ success: true, token, message: "User logged in successfully" });
         } catch (err) {
             console.error(err.message);
             res.status(500).send('Server error');

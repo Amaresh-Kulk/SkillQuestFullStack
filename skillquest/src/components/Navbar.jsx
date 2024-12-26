@@ -12,7 +12,7 @@ export default class Navbar extends PureComponent {
       <div className="navbar">
         <div className="left-nav">
           <Link to="/">
-            <img src={MiniLogo} alt="SkillQuest Logo" />
+            {/* <img src={MiniLogo} alt="SkillQuest Logo" /> */} SKILLQUEST
           </Link>
         </div>
 

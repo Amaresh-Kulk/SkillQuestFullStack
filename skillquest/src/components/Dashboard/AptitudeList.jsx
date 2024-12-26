@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import './styles/AptitudeList.css'; // Import the CSS file
+import { jwtDecode } from 'jwt-decode';
 
 const AptitudeQuestions = () => {
     const [categories, setCategories] = useState(['easy', 'medium', 'hard']);
@@ -8,15 +9,18 @@ const AptitudeQuestions = () => {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [clickedAnswers, setClickedAnswers] = useState({}); // Track answers for each question
-    const [score, setScore] = useState({ easy: 0, medium: 0, hard: 0 }); // Track score for each difficulty level
+    const [clickedAnswers, setClickedAnswers] = useState({});
+    const [score, setScore] = useState({ easy: 0, medium: 0, hard: 0 });
     const [fadeIn, setFadeIn] = useState(false);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Track current question
-    const [submitted, setSubmitted] = useState(false); // Track if the answer has been submitted
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [submitted, setSubmitted] = useState(false);
+    const [message, setMessage] = useState(''); // Message content
+    const [messageType, setMessageType] = useState(''); // Message style ('success' or 'error')
+    const [explanation, setExplanation] = useState(''); // Explanation of the selected answer
 
     const fetchQuestions = async (category) => {
-        if (questions.length > 0 && selectedCategory === category) return; // Do not fetch if questions are already loaded for the category
-    
+        if (questions.length > 0 && selectedCategory === category) return;
+
         setLoading(true);
         setError(null);
         try {
@@ -24,80 +28,124 @@ const AptitudeQuestions = () => {
             setQuestions(res.data);
             setClickedAnswers({});
         } catch (err) {
-            console.error('Error fetching aptitude questions:', err);
             setError('Failed to load questions. Please check your connection or try again later.');
         } finally {
             setLoading(false);
         }
     };
-    
 
     const handleCategoryClick = (category) => {
-        if (selectedCategory === category) return; // Prevent re-fetching if same category is clicked
+        if (selectedCategory === category) return;
         setSelectedCategory(category);
         fetchQuestions(category);
-        
-        setFadeIn(false); // Start fade-out
-        setTimeout(() => {
-            setFadeIn(true); // Start fade-in after content is updated
-        }, 300); // Duration of fade-out transition
+
+        setFadeIn(false);
+        setTimeout(() => setFadeIn(true), 300);
     };
 
     const handleOptionClick = (questionId, optionIndex) => {
-        // Toggle option selection for multiple selections
-        setClickedAnswers((prev) => {
-            const selectedOptions = prev[questionId] || [];
-            if (selectedOptions.includes(optionIndex)) {
-                // If already selected, unselect it
-                return {
-                    ...prev,
-                    [questionId]: selectedOptions.filter((index) => index !== optionIndex),
-                };
-            } else {
-                // Otherwise, select the option
-                return {
-                    ...prev,
-                    [questionId]: [...selectedOptions, optionIndex],
-                };
-            }
-        });
+        setClickedAnswers((prev) => ({
+            ...prev,
+            [questionId]: optionIndex,
+        }));
     };
 
-    const handleSubmit = () => {
-        let newScore = { ...score };
-        // Only update the score once when the submit button is clicked
-        if (!submitted) {
-            questions[currentQuestionIndex].options.forEach((option, index) => {
-                if (clickedAnswers[questions[currentQuestionIndex]._id]?.includes(index)) {
-                    // Update score based on the selected option
-                    if (option.isCorrect) {
-                        if (selectedCategory === 'easy') {
-                            newScore.easy += 2;
-                        } else if (selectedCategory === 'medium') {
-                            newScore.medium += 4;
-                        } else if (selectedCategory === 'hard') {
-                            newScore.hard += 8;
-                        }
-                    }
-                }
-            });
-            setScore(newScore);
+    const handleSubmit = async () => {
+        const token = localStorage.getItem('token');
+        let userId = null;
+
+        try {
+            const decoded = jwtDecode(token);
+            userId = decoded?.user?.id || null;
+        } catch (err) {
+            setMessage('Invalid token. Please log in again.');
+            setMessageType('error');
+            return;
         }
 
-        setSubmitted(true); // Set submitted to true to prevent further changes
+        const currentQuestion = questions[currentQuestionIndex];
+        const selectedOptionIndex = clickedAnswers[currentQuestion._id];
+
+        if (!userId) {
+            setMessage('User not authenticated. Please log in.');
+            setMessageType('error');
+            return;
+        }
+
+        if (selectedOptionIndex === undefined) {
+            setMessage('Please select an option before submitting.');
+            setMessageType('error');
+            return;
+        }
+
+        const selectedOption1 = currentQuestion.options[selectedOptionIndex];
+        const isCorrect = selectedOption1.isCorrect;
+        const selectedOption = selectedOption1.optionText;
+
+        try {
+            const questionId = currentQuestion._id;
+
+            // Check if a submission exists for this user and question
+            const response = await axios.get(`http://localhost:8000/api/aptitudeSubmissions?userId=${userId}&questionId=${questionId}`);
+
+            if (response.data.length > 0) {
+                // If a submission exists, show a message (no score update)
+                setMessage('You have already submitted an answer for this question.');
+                setMessageType('warning');
+                return;
+            }
+
+            // If no previous submission, proceed with submission and score update
+            await axios.post('http://localhost:8000/api/aptitudeSubmissions', {
+                userId,
+                questionId,
+                selectedOption,
+            });
+
+            setMessage('Answer submitted successfully!');
+            setMessageType('success');
+
+            // Update score locally only once if the answer is correct
+            if (isCorrect) {
+                let newScore = { ...score };
+
+                // Add score based on category
+                if (selectedCategory === 'easy') {
+                    newScore.easy += 2;
+                } else if (selectedCategory === 'medium') {
+                    newScore.medium += 4;
+                } else if (selectedCategory === 'hard') {
+                    newScore.hard += 8;
+                }
+                setScore(newScore);
+            }
+
+            // Fetch explanation from the question object
+            setExplanation(currentQuestion.explanation);
+
+        } catch (err) {
+            setMessage('Failed to submit the answer. Please try again.');
+            setMessageType('error');
+        }
+
+        setSubmitted(true);
     };
 
     const handleNext = () => {
-        setSubmitted(false); // Reset submission state when moving to next question
+        setSubmitted(false); // Reset submission state
+        setMessage(''); // Clear message
+        setMessageType(''); // Clear message type
+        setExplanation(''); // Clear explanation
         setCurrentQuestionIndex((prevIndex) => (prevIndex + 1) % questions.length); // Loop through questions
     };
-
+    
     const handlePrevious = () => {
-        setSubmitted(false); // Reset submission state when moving to previous question
+        setSubmitted(false); // Reset submission state
+        setMessage(''); // Clear message
+        setMessageType(''); // Clear message type
+        setExplanation(''); // Clear explanation
         setCurrentQuestionIndex((prevIndex) => (prevIndex - 1 + questions.length) % questions.length); // Loop through questions
     };
-
-    const totalScore = score.easy + score.medium + score.hard; // Calculate total score
 
     return (
         <div className="aptitude-container">
@@ -117,6 +165,13 @@ const AptitudeQuestions = () => {
                 </ul>
             </div>
 
+            {/* Message Section */}
+            {message && (
+                <div className={`message ${messageType}`}>
+                    {message}
+                </div>
+            )}
+
             {/* Questions Section */}
             <div className="question-section">
                 {loading ? (
@@ -126,37 +181,34 @@ const AptitudeQuestions = () => {
                 ) : selectedCategory && questions.length > 0 ? (
                     <>
                         <h3>Question {currentQuestionIndex + 1}</h3>
-                        {/* Ensure that the question exists before rendering */}
-                        <h4>
-                            {questions[currentQuestionIndex] ? questions[currentQuestionIndex].questionText : 'Loading question...'}
-                        </h4>
+                        <h4>{questions[currentQuestionIndex]?.questionText}</h4>
+                        {/* Explanation Section */}
+                        {submitted && explanation && (
+                            <div className="explanation">
+                                {/* <h4>Explanation:</h4> */}
+                                <p>{explanation}</p>
+                            </div>
+                        )}
                         <div className="options-container">
                             {questions[currentQuestionIndex].options.map((option, index) => (
                                 <button
                                     key={index}
                                     className={`option-button ${
-                                        clickedAnswers[questions[currentQuestionIndex]._id]?.includes(index) ? 'selected' : ''
-                                    } ${
-                                        submitted && option.isCorrect ? 'correct' : ''
-                                    }`}
-                                    onClick={() =>
-                                        handleOptionClick(questions[currentQuestionIndex]._id, index)
-                                    }
+                                        clickedAnswers[questions[currentQuestionIndex]._id] === index ? 'selected' : ''
+                                    } ${submitted && option.isCorrect ? 'correct' : ''}`}
+                                    onClick={() => handleOptionClick(questions[currentQuestionIndex]._id, index)}
                                 >
                                     {option.optionText}
                                 </button>
                             ))}
                         </div>
-                        {/* Submit and Navigation Buttons */}
                         <div className="button-container">
                             <button onClick={handlePrevious}>Previous</button>
                             <button onClick={handleSubmit}>Submit</button>
                             <button onClick={handleNext}>Next</button>
                         </div>
-                        {/* Show Scores for Different Difficulty Levels */}
-                        <h3 className="total-score">
-                            Total Score: {totalScore} (Easy: {score.easy}, Medium: {score.medium}, Hard: {score.hard})
-                        </h3>
+
+                        
                     </>
                 ) : selectedCategory ? (
                     <p>No questions available for "{selectedCategory}" difficulty.</p>
@@ -164,7 +216,6 @@ const AptitudeQuestions = () => {
                     <p>Please select a category to view questions.</p>
                 )}
             </div>
-
         </div>
     );
 };

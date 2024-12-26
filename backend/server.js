@@ -14,6 +14,18 @@ const cookieParser = require("cookie-parser");
 dotenv.config();
 
 
+
+// Import custom modules
+const connectDB = require("./config/db");
+const aptitudeRouter = require("./routes/aptitude");
+const codingRouter = require("./routes/coding");
+const runCodeRouter = require("./routes/runCode"); // Add runCode route
+const testCaseRouter = require("./routes/testcase");
+const usersRouter = require("./routes/users");
+const mainFunctionRoutes = require('./routes/MainFunction'); // Adjust path if necessary
+const submissionRouter = require("./routes/submission");  // Add submission route
+// const AptitudeSubmissionRouter = require("./routes/AptitudeSubmission");
+const router = require("./routes/AptitudeSubmission");
 const app = express();
 const PORT = 8000;
 
@@ -28,14 +40,6 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(express.json());
 
-// Import custom modules
-const connectDB = require("./config/db");
-const aptitudeRouter = require("./routes/aptitude");
-const codingRouter = require("./routes/coding");
-const runCodeRouter = require("./routes/runCode"); // Add runCode route
-const testCaseRouter = require("./routes/testcase");
-const usersRouter = require("./routes/users");
-const mainFunctionRoutes = require('./routes/MainFunction'); // Adjust path if necessary
 
 connectDB();
 
@@ -58,6 +62,8 @@ app.use("/api/coding", codingRouter); // Coding-related operations
 app.use("/api/testcases", testCaseRouter); // Test case-related operations
 app.use("/api/runcode", runCodeRouter);
 app.use('/api/mainFunctions', mainFunctionRoutes);
+app.use("/api/submissions", submissionRouter); // Use submission route
+app.use("/api/aptitudeSubmissions", router);
 
 // Start the server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,6 +1,6 @@
 const express = require('express');
-const { exec } = require('child_process');
-const TestCase = require('../models/TestCase'); // Ensure proper model import
+const { NodeVM } = require('vm2');  // Import NodeVM from vm2 for sandboxing
+const Submission = require('../models/Submission');
 const router = express.Router();
 
 // Map difficulty to scores
@@ -10,52 +10,58 @@ const difficultyScores = {
     hard: 8,
 };
 
-// Run code endpoint
 router.post('/run', async (req, res) => {
-    const { question_id, code } = req.body;
-    // console.log(question_id);
+    const { question_id, code, userId } = req.body;
+
     try {
-        // Fetch the test cases for the given question ID
-        const questionTestCases = await TestCase.findOne({ question_id: question_id });
-        console.log(questionTestCases);
-        if (!questionTestCases || questionTestCases.testCases.length === 0) {
-            return res.status(404).json({ error: 'No test cases found for the given question.' });
-        }
+        console.log('Received request to execute code:', { question_id, code });
 
-        const testCases = questionTestCases.testCases;
-        const results = [];
-        let passedCount = 0;
+        // Example difficulty, you may want to fetch this dynamically based on the question
+        const difficulty = 'easy';
 
-        // Execute test cases sequentially (or parallel based on language support)
-        for (const testCase of testCases) {
-            const { input, expectedOutput } = testCase;
+        // Create a NodeVM for secure code execution
+        const vm = new NodeVM({
+            console: 'redirect', // Capture console logs
+            sandbox: { userId, question_id }, // Add any necessary variables to the sandbox
+            require: {
+                external: true, // Allow external libraries if needed
+            },
+            wrapper: 'none', // Prevent the wrapper function from modifying the code
+        });
 
-            // Command to execute code (Adjust based on language and setup)
-            const command = `echo "${input}" | node -e "${code}"`; // Adjust for JavaScript
+        // Run the user's code in the sandbox
+        const result = vm.run(code);
 
-            // Run the code with test case input
-            const output = await new Promise((resolve, reject) => {
-                exec(command, (err, stdout, stderr) => {
-                    if (err) reject(stderr);
-                    resolve(stdout.trim());
-                });
-            });
+        // Check for success (you might want to improve this part with actual test cases)
+        const success = result.success || false;
+        const score = success ? difficultyScores[difficulty] : 0;
 
-            // Compare output with expected output
-            const passed = output === expectedOutput;
-            if (passed) passedCount++;
-            results.push({ input, expectedOutput, output, passed });
-        }
+        // Create a new submission document
+        const newSubmission = new Submission({
+            userId,
+            questionId: question_id,
+            code,
+            language: 'javascript',
+            output: result.output,
+            error: result.error || null,
+            score,  // Add score
+        });
 
-        // Calculate score
-        const score = passedCount === testCases.length ? difficultyScores[question.difficulty] : 0;
+        // Save the submission to the database
+        await newSubmission.save();
 
+        // Send response with results
         res.json({
-            passedCount,
-            totalTestCases: testCases.length,
-            results,
+            passedCount: 1,
+            totalTestCases: 1,
+            results: [{
+                input: code,
+                expectedOutput: result.output || 'No output',
+                output: result.output,
+                passed: success,
+            }],
             score,
-            success: passedCount === testCases.length,
+            success,
         });
     } catch (err) {
         console.error('Error during code execution:', err);

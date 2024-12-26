@@ -5,7 +5,7 @@
   /* width: 90%; Adjusted width for better responsiveness */
   /* max-width: 1200px; Max width of the page */
   margin: 80px auto;
-  background-color: #1e1e1e; /* Dark background */
+  background-color: #241c3d; /* Dark background */
   color: #f1f1f1; /* Lighter text */
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -42,7 +42,7 @@
 
 .question-list-container,
 .editor-container {
-  background-color: #222;
+  background-color: #050c2b;
   padding: 20px;
   border-radius: 5px;
   box-sizing: border-box; /* Ensure padding doesn't affect width */
@@ -64,7 +64,7 @@
 
 .navigation-button {
   padding: 10px 20px;
-  background-color: #333;
+  background-color: #1f0d85;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -82,7 +82,7 @@
 }
 
 .execute-button {
-  background-color: #4CAF50;
+  background-color: #6eca71;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -98,7 +98,7 @@
 
 /* Question card */
 .question-card {
-  background-color: #2a2a2a;
+  background-color: #1d1541;
   padding: 20px;
   border-radius: 5px;
   margin-bottom: 20px;

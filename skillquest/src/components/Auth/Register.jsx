@@ -41,14 +41,20 @@ const Register = () => {
 
             setMessage('Registration successful! Logging you in...');
 
+            // Automatically log the user in after registration
             const loginRes = await axios.post(
                 'http://localhost:8000/api/users/login',
                 { email, password },
                 { withCredentials: true }
             );
 
-            localStorage.setItem('token', loginRes.data.token);
+            // Store the user and token in localStorage
+            const { token, user } = loginRes.config.data;
+            console.log(loginRes.config);
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
 
+            // Redirect to the profile page
             navigate('/dashboard/profile');
         } catch (err) {
             setMessage(err.response?.data?.msg || 'Error registering. Please try again later.');

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import MonacoEditor from '@monaco-editor/react';
 import './styles/CodingList.css';
@@ -10,97 +11,79 @@ const CodingList = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('medium');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [executionResult, setExecutionResult] = useState(null);
-  const [predefinedMainFunction, setPredefinedMainFunction] = useState('');
-  const [score, setScore] = useState(0);
-  const [totalScore, setTotalScore] = useState(0);
+  const [code, setCode] = useState('');
   const difficulties = ['easy', 'medium', 'hard'];
 
-  // Difficulty marks
-  const difficultyMarks = {
-    easy: 2,
-    medium: 4,
-    hard: 8,
-  };
+  // Retrieve and decode token to get userId
+  const token = localStorage.getItem('token');
+  const decoded = jwtDecode(token);
+  const userId = decoded?.user?.id || null;
 
-  // Fetch the predefined main function
   useEffect(() => {
-    const fetchMainFunction = async () => {
+    if (!userId) {
+      setError('User not logged in. Please log in.');
+      return;
+    }
+
+    const fetchQuestions = async () => {
+      setLoading(true);
       try {
-        const res = await axios.get('http://localhost:8000/api/mainFunctions');
-        setPredefinedMainFunction(res.data);
+        const res = await axios.get(`http://localhost:8000/api/coding?difficulty=${selectedDifficulty}`);
+        setQuestions(res.data || []);
+        setCurrentQuestionIndex(0); // Reset to the first question
       } catch (err) {
-        console.error('Error fetching predefined main function:', err);
-        setError('Failed to load the predefined main function.');
+        console.error("Failed to load questions:", err);
+        setError('Failed to load coding questions.');
+      } finally {
+        setLoading(false);
       }
     };
-    fetchMainFunction();
-  }, []);
 
-  const fetchQuestions = async (difficulty) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await axios.get(`http://localhost:8000/api/coding?difficulty=${difficulty}`);
-      setQuestions(res.data || []);
-      setCurrentQuestionIndex(0); // Reset to the first question
-    } catch (err) {
-      console.error('Error fetching coding questions:', err);
-      setError('Failed to load coding questions. Please try again later.');
-    } finally {
-      setLoading(false);
+    fetchQuestions();
+  }, [selectedDifficulty, userId]);
+
+  const handleExecuteCode = async () => {
+    const currentQuestion = questions[currentQuestionIndex];
+  
+    if (!userId || !currentQuestion || !code) {
+      setExecutionResult('User not found or invalid code.');
+      return;
     }
-  };
-
-  useEffect(() => {
-    fetchQuestions(selectedDifficulty);
-  }, [selectedDifficulty]);
-
-  const handleDifficultyChange = (difficulty) => {
-    setSelectedDifficulty(difficulty);
+  
+    try {
+      const question_id = currentQuestion._id;
+      const response = await axios.post('http://localhost:8000/api/runcode/run', {
+        question_id,
+        code,
+        userId
+      });
+  
+      console.log("Execution Response: ", response.data);
+  
+      const { passedCount, totalTestCases, results, score, success } = response.data;
+  
+      if (success) {
+        setExecutionResult(`
+          Execution Result:
+          Test Cases Passed: ${passedCount}/${totalTestCases}
+          Score: ${score}
+          Output: ${results[0]?.output || 'No output'}
+        `);
+      } else {
+        setExecutionResult(`
+          Execution Failed:
+          Error: ${results[0]?.error || 'Unknown error'}
+        `);
+      }
+  
+    } catch (err) {
+      console.error("Execution error:", err);
+      setExecutionResult('Error executing the code.');
+    }
   };
 
   const handleCodeChange = (newCode) => {
-    if (questions[currentQuestionIndex]) {
-      const updatedQuestions = [...questions];
-      updatedQuestions[currentQuestionIndex].solution = newCode;
-      setQuestions(updatedQuestions);
-    }
-  };
-
-  const handleExecuteCode = async () => {
-    if (!questions[currentQuestionIndex] || !predefinedMainFunction) return;
-
-    const currentQuestion = questions[currentQuestionIndex];
-    const userCode = currentQuestion.solution;
-    const testCases = currentQuestion.testCases;
-
-    const fullCode = `
-      ${userCode}
-      ${predefinedMainFunction}
-      const testCases = ${JSON.stringify(testCases)};
-      const userFunction = ${currentQuestion.functionName}; // Replace with function name
-      runTestCases(userFunction, testCases);
-    `;
-
-    try {
-      const response = await axios.post(`http://localhost:8000/api/runcode/run`, {
-        code: fullCode,
-        language: 'javascript',
-      });
-
-      // Compare the output with test cases
-      const testResults = response.data;
-      setExecutionResult(testResults);
-
-      // Calculate score
-      const questionDifficulty = currentQuestion.difficulty;
-      const currentScore = difficultyMarks[questionDifficulty];
-      setScore(currentScore);
-      setTotalScore((prevScore) => prevScore + currentScore);
-    } catch (err) {
-      console.error('Error executing code:', err);
-      setExecutionResult({ error: 'Failed to execute the code. Please try again.' });
-    }
+    setCode(newCode);
   };
 
   const handlePrevious = () => {
@@ -111,8 +94,6 @@ const CodingList = () => {
     setCurrentQuestionIndex((prevIndex) => Math.min(prevIndex + 1, questions.length - 1));
   };
 
-  const currentQuestion = questions[currentQuestionIndex];
-
   return (
     <div className="coding-list-container">
       <h2 className="page-title">Coding Questions</h2>
@@ -122,7 +103,7 @@ const CodingList = () => {
           <button
             key={difficulty}
             className={`difficulty-button ${difficulty === selectedDifficulty ? 'active' : ''}`}
-            onClick={() => handleDifficultyChange(difficulty)}
+            onClick={() => setSelectedDifficulty(difficulty)}
           >
             {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
           </button>
@@ -137,33 +118,37 @@ const CodingList = () => {
         <div className="coding-content">
           <div className="question-list-container">
             <div className="question-card">
-              <h3>{currentQuestion?.questionText}</h3>
-              <p><strong>Category:</strong> {currentQuestion?.category}</p>
-              <p><strong>Difficulty:</strong> {currentQuestion?.difficulty}</p>
-              <p><strong>Constraints:</strong> {currentQuestion?.constraints}</p>
-              <h4>Example</h4>
-              {currentQuestion?.example && (
-                <>
-                  <p><strong>Input:</strong> {currentQuestion.example.input}</p>
-                  <p><strong>Output:</strong> {currentQuestion.example.output}</p>
-                </>
+              <h3>{questions[currentQuestionIndex]?.questionText}</h3>
+              <p><strong>Category:</strong> {questions[currentQuestionIndex]?.category}</p>
+              <p><strong>Difficulty:</strong> {questions[currentQuestionIndex]?.difficulty}</p>
+              <p><strong>Description:</strong> {questions[currentQuestionIndex]?.description}</p>
+              {questions[currentQuestionIndex]?.example && (
+                <div>
+                  <strong>Example:</strong>
+                  <p><strong>Input:</strong> {questions[currentQuestionIndex]?.example.input}</p>
+                  <p><strong>Output:</strong> {questions[currentQuestionIndex]?.example.output}</p>
+                </div>
               )}
             </div>
           </div>
 
           <div className="editor-container">
             <MonacoEditor
-              value={currentQuestion?.solution || ''}
+              value={code}
               onChange={handleCodeChange}
               language="javascript"
               theme="vs-dark"
               height="400px"
               options={{ selectOnLineNumbers: true, minimap: { enabled: false } }}
             />
-            {/* <button onClick={handleExecuteCode} className="execute-button">
-              Execute Code
-            </button> */}
           </div>
+        </div>
+      )}
+
+      {executionResult && (
+        <div className="execution-result">
+          <h4>Execution Result:</h4>
+          <pre>{executionResult}</pre>
         </div>
       )}
 
@@ -188,11 +173,6 @@ const CodingList = () => {
         >
           Next
         </button>
-      </div>
-
-      <div className="score-container">
-        <p><strong>Score for this question:</strong> {score}</p>
-        <p><strong>Total Score:</strong> {totalScore}</p>
       </div>
     </div>
   );
