@@ -1,72 +1,88 @@
 const express = require('express');
-const { NodeVM } = require('vm2');  // Import NodeVM from vm2 for sandboxing
-const Submission = require('../models/Submission');
+const { exec } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const Submission = require('../models/Submission'); // Import the Submission model
+
 const router = express.Router();
 
-// Map difficulty to scores
-const difficultyScores = {
-    easy: 2,
-    medium: 4,
-    hard: 8,
-};
+router.use(bodyParser.json());
+router.use(cors());
 
+const TMP_FOLDER = './tmp';
+
+// Ensure temporary folder exists
+if (!fs.existsSync(TMP_FOLDER)) {
+    fs.mkdirSync(TMP_FOLDER);
+}
+
+
+
+// Endpoint to run user code
 router.post('/run', async (req, res) => {
-    const { question_id, code, userId } = req.body;
+    console.log('Request received:', req.body);
 
-    try {
-        console.log('Received request to execute code:', { question_id, code });
+    const { code, language, userId, questionId } = req.body;
 
-        // Example difficulty, you may want to fetch this dynamically based on the question
-        const difficulty = 'easy';
+    if (!code || !language) {
+        return res.status(400).json({ error: 'Code and language are required.' });
+    }
 
-        // Create a NodeVM for secure code execution
-        const vm = new NodeVM({
-            console: 'redirect', // Capture console logs
-            sandbox: { userId, question_id }, // Add any necessary variables to the sandbox
-            require: {
-                external: true, // Allow external libraries if needed
-            },
-            wrapper: 'none', // Prevent the wrapper function from modifying the code
-        });
+    const fileExtensions = {
+        javascript: 'js',
+        python: 'py',
+        java: 'java',
+    };
 
-        // Run the user's code in the sandbox
-        const result = vm.run(code);
+    const fileExtension = fileExtensions[language.toLowerCase()];
 
-        // Check for success (you might want to improve this part with actual test cases)
-        const success = result.success || false;
-        const score = success ? difficultyScores[difficulty] : 0;
+    if (!fileExtension) {
+        return res.status(400).json({ error: 'Unsupported language.' });
+    }
 
-        // Create a new submission document
-        const newSubmission = new Submission({
-            userId,
-            questionId: question_id,
-            code,
-            language: 'javascript',
-            output: result.output,
-            error: result.error || null,
-            score,  // Add score
-        });
+    const fileName = `code_${Date.now()}.${fileExtension}`;
+    const filePath = path.join(TMP_FOLDER, fileName);
+
+    // Write code to a temporary file
+    fs.writeFileSync(filePath, code);
+
+    let command = '';
+    if (language === 'javascript') {
+        command = `node ${filePath}`;
+    } else if (language === 'python') {
+        command = `python ${filePath}`;
+    } else if (language === 'java') {
+        const className = fileName.replace('.java', '');
+        command = `javac ${filePath} && java ${className}`;
+    }
+
+    // Execute the command
+    exec(command, async (error, stdout, stderr) => {
+        // Cleanup temporary file
+        fs.unlinkSync(filePath);
+
+        const output = error || stderr ? stderr || 'Error executing the code.' : stdout.trim();
 
         // Save the submission to the database
-        await newSubmission.save();
-
-        // Send response with results
-        res.json({
-            passedCount: 1,
-            totalTestCases: 1,
-            results: [{
-                input: code,
-                expectedOutput: result.output || 'No output',
-                output: result.output,
-                passed: success,
-            }],
-            score,
-            success,
+        const submission = new Submission({
+            userId,
+            questionId,
+            code,
+            language,
+            output,
+            error: error || stderr ? output : null,
         });
-    } catch (err) {
-        console.error('Error during code execution:', err);
-        res.status(500).json({ error: 'Error executing code.' });
-    }
+
+        try {
+            await submission.save();
+            res.json({ output });
+        } catch (err) {
+            console.error("Error saving submission:", err);
+            res.status(500).json({ error: 'Failed to save submission.' });
+        }
+    });
 });
 
 module.exports = router;

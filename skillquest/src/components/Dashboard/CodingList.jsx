@@ -12,6 +12,7 @@ const CodingList = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [executionResult, setExecutionResult] = useState(null);
   const [code, setCode] = useState('');
+  const [language, setLanguage] = useState('javascript'); // Adding language state
   const difficulties = ['easy', 'medium', 'hard'];
 
   // Retrieve and decode token to get userId
@@ -49,31 +50,28 @@ const CodingList = () => {
       setExecutionResult('User not found or invalid code.');
       return;
     }
-  
+
     try {
-      const question_id = currentQuestion._id;
+      const questionId = currentQuestion._id;
+      // Sending language and userId as part of the request
       const response = await axios.post('http://localhost:8000/api/runcode/run', {
-        question_id,
         code,
-        userId
+        language,
+        userId,
+        questionId  // Make sure this is passed correctly
       });
-  
+
       console.log("Execution Response: ", response.data);
   
-      const { passedCount, totalTestCases, results, score, success } = response.data;
+      const { output } = response.data;
   
-      if (success) {
+      if (output) {
         setExecutionResult(`
           Execution Result:
-          Test Cases Passed: ${passedCount}/${totalTestCases}
-          Score: ${score}
-          Output: ${results[0]?.output || 'No output'}
+          Output: ${output || 'No output'}
         `);
       } else {
-        setExecutionResult(`
-          Execution Failed:
-          Error: ${results[0]?.error || 'Unknown error'}
-        `);
+        setExecutionResult(`Execution Failed: Error in code.`);
       }
   
     } catch (err) {
@@ -136,7 +134,7 @@ const CodingList = () => {
             <MonacoEditor
               value={code}
               onChange={handleCodeChange}
-              language="javascript"
+              language={language}  // Bind the selected language to Monaco editor
               theme="vs-dark"
               height="400px"
               options={{ selectOnLineNumbers: true, minimap: { enabled: false } }}
