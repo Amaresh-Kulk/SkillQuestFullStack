@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import './styles/Profile.css';
 import profilePhoto from './images/Batmobile.jpg';
+import Heatmap from './HeatMap'; // Import your Heatmap component
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
@@ -12,9 +13,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const aptitudeStreaksChartRef = useRef(null);
   const aptitudeDonutChartRef = useRef(null);
-  const codingStreaksChartRef = useRef(null);
   const codingDonutChartRef = useRef(null);
 
   const initChart = (chartRef, chartId, data, options) => {
@@ -58,12 +57,6 @@ const Profile = () => {
         const codingRes = await axios.get(`http://localhost:8000/api/submissions/${userId}`, config);
         const userRes = await axios.get(`http://localhost:8000/api/users/${userId}`, config);
 
-        // // Debug logs for API responses
-        // console.log('Aptitude API Response:', aptitudeRes.data);
-        // console.log('Coding API Response:', codingRes.data);
-        // console.log('User API Response:', userRes.data);
-
-        // Fetch question difficulties for aptitude submissions
         const aptitudeSubmissions = await Promise.all(
           aptitudeRes.data.submissions.map(async (submission) => {
             const questionRes = await axios.get(
@@ -74,7 +67,6 @@ const Profile = () => {
           })
         );
 
-        // Fetch question difficulties for coding submissions
         const codingSubmissions = await Promise.all(
           codingRes.data.submissions.map(async (submission) => {
             const questionRes = await axios.get(
@@ -91,7 +83,6 @@ const Profile = () => {
 
         setLoading(false);
       } catch (err) {
-        // console.error('Error fetching data:', err.message);
         setError(err.message);
         setLoading(false);
       }
@@ -99,29 +90,6 @@ const Profile = () => {
 
     fetchUserData();
   }, []);
-
-  const calculateStreaks = (data) => {
-    const streaks = {};
-    let currentStreak = 0;
-    let lastSubmissionDate = null;
-
-    data.forEach((item) => {
-      const submissionDate = new Date(item.submissionDate).toISOString().split('T')[0];
-      if (
-        lastSubmissionDate &&
-        new Date(submissionDate) - new Date(lastSubmissionDate) === 86400000
-      ) {
-        currentStreak++;
-      } else {
-        currentStreak = 1;
-      }
-
-      streaks[submissionDate] = currentStreak;
-      lastSubmissionDate = submissionDate;
-    });
-
-    return streaks;
-  };
 
   const groupDataByDifficulty = (data) => {
     const grouped = { easy: 0, medium: 0, hard: 0 };
@@ -150,40 +118,8 @@ const Profile = () => {
   useEffect(() => {
     if (!aptitudeData || !codingData || loading) return;
 
-    const aptitudeStreaks = calculateStreaks(aptitudeData.submissions);
-    const aptitudeGrouped = Object.entries(aptitudeStreaks).reduce((acc, [date, streak]) => {
-      const day = new Date(date).toLocaleString('en-US', { weekday: 'short' });
-      acc[day] = acc[day] ? acc[day] + streak : streak;
-      return acc;
-    }, {});
-
     const aptitudeDifficultyGrouped = groupDataByDifficulty(aptitudeData);
     const codingDifficultyGrouped = groupDataByDifficulty(codingData);
-
-    // Debug final data
-    console.log('Aptitude Streaks:', aptitudeGrouped);
-    console.log('Aptitude Difficulty:', aptitudeDifficultyGrouped);
-    console.log('Coding Difficulty:', codingDifficultyGrouped);
-
-    initChart(
-      aptitudeStreaksChartRef,
-      'aptitudeStreaksChart',
-      {
-        labels: Object.keys(aptitudeGrouped),
-        datasets: [
-          {
-            label: 'Aptitude Streaks',
-            data: Object.values(aptitudeGrouped),
-            borderColor: '#4F46E5',
-            tension: 1,
-          },
-        ],
-      },
-      {
-        type: 'line',
-        chartOptions: { responsive: true, plugins: { legend: { display: false } } },
-      }
-    );
 
     initChart(
       aptitudeDonutChartRef,
@@ -207,33 +143,6 @@ const Profile = () => {
       }
     );
 
-    const codingStreaks = calculateStreaks(codingData.submissions);
-    const codingGrouped = Object.entries(codingStreaks).reduce((acc, [date, streak]) => {
-      const day = new Date(date).toLocaleString('en-US', { weekday: 'short' });
-      acc[day] = acc[day] ? acc[day] + streak : streak;
-      return acc;
-    }, {});
-
-    initChart(
-      codingStreaksChartRef,
-      'codingStreaksChart',
-      {
-        labels: Object.keys(codingGrouped),
-        datasets: [
-          {
-            label: 'Coding Streaks',
-            data: Object.values(codingGrouped),
-            borderColor: '#F59E0B',
-            tension: 1,
-          },
-        ],
-      },
-      {
-        type: 'line',
-        chartOptions: { responsive: true, plugins: { legend: { display: false } } },
-      }
-    );
-
     initChart(
       codingDonutChartRef,
       'codingDonutChart',
@@ -247,6 +156,7 @@ const Profile = () => {
               codingDifficultyGrouped.hard,
             ],
             backgroundColor: ['#22C55E', '#EAB308', '#EF4444'],
+            color: '#e0e0e0',
           },
         ],
       },
@@ -256,9 +166,6 @@ const Profile = () => {
       }
     );
   }, [aptitudeData, codingData, loading]);
-
-  
-
 
   return (
     <div className="profile-container">
@@ -274,23 +181,13 @@ const Profile = () => {
         ) : (
           <p>Loading user details...</p>
         )}
-        
       </div>
-
 
       <div className="charts-container">
         {loading && <p>Loading charts...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
         <div className="chart-row">
-          <div className="chart-section">
-            <h3>Aptitude Streaks</h3>
-            {aptitudeData?.submissions?.length > 0 ? (
-              <canvas id="aptitudeStreaksChart"></canvas>
-            ) : (
-              <p>No aptitude streak data available yet.</p>
-            )}
-          </div>
           <div className="chart-section">
             <h3>Aptitude Questions</h3>
             {aptitudeData?.submissions?.length > 0 ? (
@@ -299,17 +196,17 @@ const Profile = () => {
               <p>No aptitude question data available yet.</p>
             )}
           </div>
+          <div className="chart-section heatmap">
+            <h3>Activity Heatmap (Aptitude)</h3>
+            {aptitudeData?.submissions?.length > 0 ? (
+              <Heatmap data={aptitudeData.submissions} title="Aptitude" />
+            ) : (
+              <p>No aptitude activity data available yet.</p>
+            )}
+          </div>
         </div>
 
         <div className="chart-row">
-          <div className="chart-section">
-            <h3>Coding Streaks</h3>
-            {codingData?.submissions?.length > 0 ? (
-              <canvas id="codingStreaksChart"></canvas>
-            ) : (
-              <p>No coding streak data available yet.</p>
-            )}
-          </div>
           <div className="chart-section">
             <h3>Coding Questions</h3>
             {codingData?.submissions?.length > 0 ? (
@@ -318,9 +215,16 @@ const Profile = () => {
               <p>No coding question data available yet.</p>
             )}
           </div>
+          <div className="chart-section heatmap">
+            <h3>Activity Heatmap (Coding)</h3>
+            {codingData?.submissions?.length > 0 ? (
+              <Heatmap data={codingData.submissions} title="Coding" />
+            ) : (
+              <p>No coding activity data available yet.</p>
+            )}
+          </div>
         </div>
       </div>
-      
     </div>
   );
 };

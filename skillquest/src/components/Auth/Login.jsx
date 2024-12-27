@@ -1,12 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';  // Import useNavigate from react-router-dom
 import './styles/Login.css'; // Ensure this path is correct
 import Cookies from 'js-cookie';
-
-
-
-
-
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -14,6 +10,8 @@ const Login = () => {
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
+
+    const navigate = useNavigate();  // Use useNavigate hook for redirection
 
     // Auto-login on page load if the user is already stored in localStorage or sessionStorage
     useEffect(() => {
@@ -24,15 +22,9 @@ const Login = () => {
             // Optionally, you can make an API call here to verify the token or check if it's still valid
             console.log('User is already logged in');
             // Redirect to the dashboard or another page if desired
+            navigate('/');  // Redirect to homepage if user is already logged in
         }
-    }, []);
-    // const getTokenFromCookies = () => {
-    //     const cookies = document.cookie; // Retrieves all cookies as a single string
-    //     const tokenCookie = cookies.split('; ').find(row => row.startsWith('token='));
-    //     return tokenCookie ? tokenCookie.split('=')[1] : null;
-    // };
-    
-    
+    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -57,8 +49,9 @@ const Login = () => {
             }
     
             setMessage(message || 'Login successful!');
-            // Optionally redirect to another page
-            // window.location.href = '/dashboard/profile';
+            // Navigate to the homepage after successful login
+            navigate('/');  // Redirect to the homepage
+            window.location.reload();  // Refresh the page
         } catch (err) {
             if (err.response && err.response.data && err.response.data.msg) {
                 setMessage(err.response.data.msg); // Backend error message
@@ -69,7 +62,6 @@ const Login = () => {
             setLoading(false);
         }
     };
-    
 
     const handleRememberMeChange = (e) => {
         setRememberMe(e.target.checked);
@@ -82,7 +74,7 @@ const Login = () => {
         sessionStorage.removeItem('user');
         
         // Optionally, redirect to login or home page
-        window.location.href = '/login';
+        window.location.reload();  // Refresh the page after logout
     };
 
     return (

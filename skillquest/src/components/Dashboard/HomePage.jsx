@@ -9,13 +9,13 @@ import { Link } from 'react-router-dom';
 const Home = () => {
   const navigationItems = [
     {
-      icon: aptitudeLogo,
+      icon: "fa-solid fa-terminal",
       title: 'Aptitude Tests',
       description: 'Practice quantitative, logical, and verbal reasoning',
       link: '/dashboard/aptitude', // Adjust path here
     },
     {
-      icon: codingLogo,
+      icon: "fa-solid fa-clipboard-list",
       title: 'Coding Challenges',
       description: 'Enhance problem-solving skills with hands-on coding',
       link: '/dashboard/coding', // Adjust path here
@@ -48,7 +48,8 @@ const Home = () => {
           <Link key={index} to={item.link} className='no-underline'>
             <button className='item'>
               <div className='icon'>
-                <img src={item.icon} alt={item.title} />
+                {/* <img src={item.icon} alt={item.title} /> */}
+                <i className={item.icon} ></i>
               </div>
               <div className='msg'>
                 <div>{item.title}</div>

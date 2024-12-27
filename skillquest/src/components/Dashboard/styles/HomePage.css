@@ -9,7 +9,7 @@ body {
 .home {
   padding-top: 55px;
   margin-top: 10px;
-  margin-left: 50px;
+  /* margin-left: 25px; */
   font-family: Roboto;
   position: relative;
   z-index: 1;
@@ -18,11 +18,13 @@ body {
 
 .intro {
   height: 560px;
+  width: 1300px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
   margin-top: 0px;
+  margin-left: 25px;
   background-image: url("../images/homePageImage.jpg");
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -60,7 +62,7 @@ body {
   text-align: center;
   font-size: 50px;
   font-weight: 300;
-  color: aliceblue;
+  /* color: aliceblue; */
   margin-top: 50px;
   cursor: text;
   box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.15);
@@ -73,7 +75,6 @@ body {
   border: none;
   border-radius: 10px;
   background-color: rgb(65, 51, 78); /* Dark purple button */
-  transition: none; /* Remove transition on hover */
 }
 
 .navigate {
@@ -107,6 +108,7 @@ body {
 
 .icon {
   margin-right: 0px;
+  width: 30px;
 }
 
 .msg {
@@ -206,4 +208,21 @@ body {
 .sub-head {
   margin-bottom: 10px;
   color: rgb(150, 150, 150); /* Lighter gray text */
+}
+
+
+.color-empty {
+  fill: #ebedf0;
+}
+.color-scale-1 {
+  fill: #c6e48b;
+}
+.color-scale-2 {
+  fill: #7bc96f;
+}
+.color-scale-3 {
+  fill: #239a3b;
+}
+.color-scale-4 {
+  fill: #196127;
 }
