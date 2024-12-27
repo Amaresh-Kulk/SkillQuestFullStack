@@ -39,7 +39,7 @@ router.get('/:id', async (req, res) => {
 
 // Add a new coding question (admin only)
 router.post('/', auth, async (req, res) => {
-    const { category, difficulty, questionText, constraints, example, solution } = req.body;
+    const { category, difficulty, questionText, constraints, example, solution, description } = req.body;
 
     try {
         const newQuestion = new DSA({
@@ -48,7 +48,8 @@ router.post('/', auth, async (req, res) => {
             questionText,
             constraints,
             example,
-            solution
+            solution,
+            description
         });
 
         await newQuestion.save();

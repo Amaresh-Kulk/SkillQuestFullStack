@@ -78,7 +78,7 @@ const Login = () => {
     };
 
     return (
-        <div className="login">
+        <div className="login page-container">
             <div className="heading">
                 <h1>Sign in to your account</h1>
                 <p>

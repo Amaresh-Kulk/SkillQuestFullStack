@@ -64,7 +64,7 @@ const Register = () => {
     };
 
     return (
-        <div className="register-container">
+        <div className="register-container page-container">
             <div className="heading">
                 <h1>Create Your Account</h1>
                 <p>Please fill in the details below to sign up.</p>

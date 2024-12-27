@@ -36,7 +36,7 @@ const Home = () => {
   ];
 
   return (
-    <div className='home'>
+    <div className='home page-container'>
       <div className='intro'>
         <Link to="/login" className='h1-no-underline'>
           <h1>Master Your Interview Preparation</h1>

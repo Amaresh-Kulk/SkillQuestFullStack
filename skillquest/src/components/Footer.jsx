@@ -11,9 +11,9 @@ export default class Footer extends Component {
             <h3>SkillQuest</h3>
             <p>Your one-stop platform for complete interview preparation</p>
             <div className='images'>
-            <i className="fa-brands fa-github"></i>
-            <i className="fa-brands fa-linkedin"></i>
-            <i className="fa-brands fa-twitter"></i>
+            <div><i className="fa-brands fa-github"></i></div>
+            <div><i className="fa-brands fa-linkedin"></i></div>
+            <div><i className="fa-brands fa-twitter"></i></div>
             </div>
           </div>
           <div className='footer-2'>

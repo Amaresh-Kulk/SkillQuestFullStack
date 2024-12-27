@@ -57,3 +57,8 @@
     padding: 1.5em;
   }
 }
+
+button:hover{
+  background-color: #152638; /* Slightly lighter on hover */
+}
+

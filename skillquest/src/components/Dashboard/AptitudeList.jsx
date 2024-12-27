@@ -148,7 +148,7 @@ const AptitudeQuestions = () => {
     };
 
     return (
-        <div className="aptitude-container">
+        <div className="aptitude-container page-container">
             <h2>Aptitude Questions</h2>
 
             {/* Categories Section */}

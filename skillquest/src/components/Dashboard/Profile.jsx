@@ -183,13 +183,13 @@ const Profile = () => {
         )}
       </div>
 
-      <div className="charts-container">
+      <div className="charts-container page-container">
         {loading && <p>Loading charts...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
         <div className="chart-row">
           <div className="chart-section">
-            <h3>Aptitude Questions</h3>
+            <h3>Aptitude Score</h3>
             {aptitudeData?.submissions?.length > 0 ? (
               <canvas id="aptitudeDonutChart"></canvas>
             ) : (
@@ -208,7 +208,7 @@ const Profile = () => {
 
         <div className="chart-row">
           <div className="chart-section">
-            <h3>Coding Questions</h3>
+            <h3>Coding Score</h3>
             {codingData?.submissions?.length > 0 ? (
               <canvas id="codingDonutChart"></canvas>
             ) : (

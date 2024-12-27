@@ -13,7 +13,8 @@ const DsaSchema = new mongoose.Schema({
         input: String,
         output: String
     },
-    solution: { type: String } // Optional field to store a solution hint or full solution
+    solution: { type: String }, // Optional field to store a solution hint or full solution
+    description: { type: String } 
 });
 
 module.exports = mongoose.model('DSA', DsaSchema);
