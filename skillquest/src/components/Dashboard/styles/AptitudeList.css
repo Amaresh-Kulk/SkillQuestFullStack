@@ -6,7 +6,7 @@
   /* height: 500px; */
   margin: 0 auto; /* Center the container horizontally */
   margin-left: 10px;
-  background-color: #22134d; /*Dark background*/
+  background-color: #2c273b; /*Dark background*/
   color: #f1f1f1; /* Lighter text */
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -51,7 +51,7 @@
 /* Button Style */
 .categories button {
   padding: 15px 30px;
-  background-color: #050c2b; /* Dark button background */
+  background-color: #292938c2; /* Dark button background */
   color: white;
   border: none;
   border-radius: 5px;
@@ -65,12 +65,23 @@
 
 /* Hover Effect for Buttons */
 .categories button:hover {
-  background-color: #1f0d85; /* Slightly lighter on hover */
+  background-color: #152638; /* Slightly lighter on hover */
 }
 
 .categories button:active {
   border: 1px solid grey;
 }
+
+.categories button.selected {
+  background-color: #4CAF50; /* Green background to indicate selection */
+  color: white; /* White text for contrast */
+  font-weight: bold; /* Make the text bold */
+  border: 2px solid #ffffff; /* Add a border to emphasize the selection */
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.7); /* Subtle glow effect */
+  transform: scale(1.1); /* Slightly enlarge the button */
+  transition: all 0.3s ease-in-out; /* Smooth transition for the effect */
+}
+
 
 
 /* Questions Section */
@@ -92,35 +103,63 @@
 .options-container {
   display: grid; /* Use grid for options */
   grid-template-columns: repeat(2, 1fr); /* 2 columns */
-  gap: 10px; /* Add gap between options */
+  gap: 20px; /* Add gap between options */
   justify-items: stretch; /* Ensure options stretch to full width */
   width: 100%; /* Full width of the container */
 }
 
+/* Option Buttons */
 .option-button {
   cursor: pointer;
-  padding: 15px 30px;
-  border: 1px solid #18095e; /* Dark border */
+  padding: 15px 20px;
+  border: 1px solid #ffffff; /* Default border */
   border-radius: 5px;
-  background-color: #0c0b29; /* Dark background for options */
+  background-color: #2a2538de; /* Dark background for default state */
   color: #f1f1f1; /* Light text */
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
   text-align: center;
+  font-size: 1rem;
 }
 
-.option-button.selected {
-  background-color: #572320; /* Green selected background */
-}
-
+/* Hover Effect for Options */
 .option-button:hover {
-  background-color: #333; /* Darker background on hover */
+  background-color: #333; /* Slightly darker on hover */
+  transform: scale(1.03); /* Enlarge slightly */
 }
 
-/* Correct answer styling */
-.option-button.correct {
-  background-color: #28a745; /* Green background for correct option */
-  color: #fff; /* White text */
+/* Selected Option */
+.option-button.selected {
+  background-color: #0056b3; /* Blue background for selection */
+  color: white;
+  font-weight: bold; /* Highlight text */
+  transform: scale(1.05); /* Slightly enlarge */
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.8); /* Subtle blue glow */
 }
+
+/* Correct Option */
+.option-button.correct {
+  background-color: #28a745; /* Green background */
+  color: #fff; /* White text for contrast */
+  border: 2px solid #155724; /* Dark green border */
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.8); /* Subtle green glow */
+}
+
+/* Incorrect Option */
+.option-button.incorrect {
+  background-color: #dc3545; /* Red background */
+  color: #fff; /* White text for contrast */
+  border: 2px solid #721c24; /* Dark red border */
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(220, 53, 69, 0.8); /* Subtle red glow */
+}
+
+/* Disabled Options (After Submission) */
+.option-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 
 /* Buttons for navigation and submit */
 .button-container {
@@ -133,8 +172,8 @@
 .button-container button {
   padding: 15px 30px;
   margin-right: 10px;
-  background-color: #333; /* Dark background for buttons */
-  color: white;
+  background-color: #b4abab; /* Dark background for buttons */
+  color: rgb(4, 2, 12);
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -155,25 +194,58 @@
 }
 
 
+/* General Message Box Styling */
 .message {
-  margin: 10px 0;
-  padding: 10px;
-  border-radius: 5px;
-  text-align: center;
-  font-weight: bold;
+  margin: 15px 0;
+  padding: 15px 20px;
+  border-radius: 8px; /* Rounded corners */
+  font-size: 1rem; /* Adjust font size */
+  text-align: center; /* Center-align text */
+  font-weight: bold; /* Bold text */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow for depth */
+  transition: all 0.3s ease; /* Smooth transitions */
 }
 
+/* Success Message Styling */
 .message.success {
-  color: #155724;
-  background-color: #d4edda;
-  border: 1px solid #c3e6cb;
+  color: #ffffff; /* Dark green text */
+  background-color: #703d42; /* Light green background */
+  /* border: 1px solid #c3e6cb; Subtle green border */
+  box-shadow: 0 4px 8px rgba(0, 255, 0, 0.1); /* Greenish shadow for effect */
 }
 
+/* Error Message Styling */
 .message.error {
-  color: #721c24;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
+  color: #ffffff; /* Dark red text */
+  background-color: #703d42; /* Light red background */
+  /* border: 1px solid #f5c6cb; Subtle red border */
+  box-shadow: 0 4px 8px rgba(255, 0, 0, 0.1); /* Reddish shadow for effect */
 }
+
+/* Add Animation for Fade-In Effect */
+.message {
+  opacity: 0;
+  animation: fadeIn 0.5s forwards;
+}
+
+/* Keyframes for Fade-In */
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+      transform: translateY(-10px); /* Slide in from above */
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+/* Hover Effect (Optional) */
+.message:hover {
+  transform: scale(1.02); /* Slight zoom */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* Enhance shadow */
+}
+
 
 /* .explanation  {
   display: flex;

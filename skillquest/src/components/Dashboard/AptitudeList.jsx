@@ -157,12 +157,16 @@ const AptitudeQuestions = () => {
                 <ul>
                     {categories.map((category) => (
                         <li key={category}>
-                            <button onClick={() => handleCategoryClick(category)}>
+                            <button
+                                onClick={() => handleCategoryClick(category)}
+                                className={selectedCategory === category ? 'selected' : ''}
+                            >
                                 {category.charAt(0).toUpperCase() + category.slice(1)}
                             </button>
                         </li>
                     ))}
                 </ul>
+
             </div>
 
             {/* Message Section */}
@@ -186,22 +190,30 @@ const AptitudeQuestions = () => {
                         {submitted && explanation && (
                             <div className="explanation">
                                 {/* <h4>Explanation:</h4> */}
-                                <p>{explanation}</p>
+                                <p>Explanation: {explanation}</p>
                             </div>
                         )}
                         <div className="options-container">
-                            {questions[currentQuestionIndex].options.map((option, index) => (
-                                <button
-                                    key={index}
-                                    className={`option-button ${
-                                        clickedAnswers[questions[currentQuestionIndex]._id] === index ? 'selected' : ''
-                                    } ${submitted && option.isCorrect ? 'correct' : ''}`}
-                                    onClick={() => handleOptionClick(questions[currentQuestionIndex]._id, index)}
-                                >
-                                    {option.optionText}
-                                </button>
-                            ))}
+                            {questions[currentQuestionIndex].options.map((option, index) => {
+                                const isSelected = clickedAnswers[questions[currentQuestionIndex]._id] === index;
+                                const isCorrect = submitted && option.isCorrect;
+                                const isIncorrect = submitted && isSelected && !option.isCorrect;
+
+                                return (
+                                    <button
+                                        key={index}
+                                        className={`option-button ${
+                                            isSelected ? 'selected' : ''
+                                        } ${isCorrect ? 'correct' : ''} ${isIncorrect ? 'incorrect' : ''}`}
+                                        onClick={() => handleOptionClick(questions[currentQuestionIndex]._id, index)}
+                                        disabled={submitted} // Disable buttons after submission
+                                    >
+                                        {option.optionText}
+                                    </button>
+                                );
+                            })}
                         </div>
+
                         <div className="button-container">
                             <button onClick={handlePrevious}>Previous</button>
                             <button onClick={handleSubmit}>Submit</button>
