@@ -20,6 +20,23 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Fetch a specific coding question by ID
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const question = await DSA.findById(id);
+        if (!question) {
+            return res.status(404).json({ msg: 'Question not found' });
+        }
+        res.json(question);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+
 // Add a new coding question (admin only)
 router.post('/', auth, async (req, res) => {
     const { category, difficulty, questionText, constraints, example, solution } = req.body;

@@ -21,11 +21,14 @@ const CodingList = () => {
   const userId = decoded?.user?.id || null;
 
   useEffect(() => {
+    setExecutionResult(null); // Clear the execution result on refresh or difficulty change
+    setCode(''); // Clear the code editor
+
     if (!userId) {
       setError('User not logged in. Please log in.');
       return;
     }
-
+  
     const fetchQuestions = async () => {
       setLoading(true);
       try {
@@ -39,9 +42,10 @@ const CodingList = () => {
         setLoading(false);
       }
     };
-
+  
     fetchQuestions();
   }, [selectedDifficulty, userId]);
+  
 
   const handleExecuteCode = async () => {
     const currentQuestion = questions[currentQuestionIndex];
@@ -86,15 +90,20 @@ const CodingList = () => {
 
   const handlePrevious = () => {
     setCurrentQuestionIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+    setExecutionResult(null); // Clear the execution result
+    setCode(''); // Clear the code editor
   };
-
+  
   const handleNext = () => {
     setCurrentQuestionIndex((prevIndex) => Math.min(prevIndex + 1, questions.length - 1));
+    setExecutionResult(null); // Clear the execution result
+    setCode(''); // Clear the code editor
   };
+  
 
   return (
     <div className="coding-list-container">
-      <h2 className="page-title">Coding Questions</h2>
+      <h2 className="page-title">Top Interview Questions</h2>
 
       <div className="difficulty-selector">
         {difficulties.map((difficulty) => (

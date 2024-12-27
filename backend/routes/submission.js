@@ -41,18 +41,28 @@ router.post(
 );
 
 // Get all submissions for a specific user
-router.get('/user/:userId', auth, async (req, res) => {
+router.get('/:userId', async (req, res) => {
+    const { userId } = req.params;  // Get userId from request params
+
     try {
-        const submissions = await Submission.find({ userId: req.params.userId }).populate('questionId', 'title');
-        if (!submissions) {
+        const submissions = await Submission.find({ userId })  // Find submissions based on userId
+            .populate('questionId', 'questionText')  // Populate 'questionId' with 'questionText' from the related DSA document
+            .exec();
+
+        // If no submissions found for the given userId
+        if (!submissions || submissions.length === 0) {
             return res.status(404).json({ msg: 'No submissions found for this user' });
         }
-        res.json(submissions);
+
+        // Return the submissions
+        res.status(200).json({ submissions });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error(err);
+        res.status(500).json({ msg: 'Server error.' });
     }
 });
+
+
 
 // Get all submissions for a specific question
 router.get('/question/:questionId', async (req, res) => {

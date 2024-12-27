@@ -73,21 +73,36 @@
 
 /* Sign In Button */
 .no-underline-signin {
-  text-decoration: none;
-  padding: 5px;
-  background-color: #3b82f6; /* Blue button */
-  color: #ffffff;
+  margin-top: -16px;
+  padding: 8px 16px;
+  background-color: #373679;
+  color: white;
+  border: none;
   border-radius: 4px;
-  font-family: Roboto, Arial, sans-serif;
-  font-size: 15px;
-  transition: background-color 0.2s ease-in-out;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.no-underline-signin:hover {
+/* .no-underline-signin:hover {
   background-color: #2563eb; /* Darker blue on hover */
-}
+} */
 
 /* Performance Section */
 .performance-icon {
   text-align: center;
+}
+
+.logout-button {
+  margin-top: -6px;
+  padding: 18px 16px;
+   background-color: #1e1e2f;
+  /*color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem; */
+  cursor: pointer;
+}
+.hello{
+  margin-top: -20px;
 }

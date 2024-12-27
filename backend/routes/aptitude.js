@@ -16,6 +16,24 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Fetch a specific aptitude question by ID
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const question = await Aptitude.findById(id);
+        if (!question) {
+            return res.status(404).json({ msg: 'Question not found' });
+        }
+        res.json(question);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+
+
 // Add a new aptitude question (admin only)
 router.post('/', async (req, res) => {
     const { difficulty, questionText, options, explanation } = req.body;

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 const SubmissionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question', required: true },
+  questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'DSA', required: true },
   code: { type: String, required: true },
   language: { type: String, required: true },
   output: { type: String },  // Store output of the code execution

@@ -1,7 +1,11 @@
 import React, { PureComponent } from 'react';
 import { Link } from 'react-router-dom';
 import './Navbar.css';
-import MiniLogo from './SkillQuest.png';
+
+const handleLogout = () => {
+  localStorage.removeItem('token');
+  window.location.href = '/login';
+};
 
 export default class Navbar extends PureComponent {
   render() {
@@ -43,12 +47,19 @@ export default class Navbar extends PureComponent {
                 <i className="fas fa-user-circle"></i>
               </Link>
             ) : (
-              <Link to="/login" className="no-underline-signin">
-                Sign In
+              <Link to="/login">
+                <i className="fa-solid fa-right-to-bracket"></i>
               </Link>
             )}
             <div className="tooltip">{isLoggedIn ? 'Profile' : 'Sign In'}</div>
           </div>
+          {isLoggedIn && (
+            <div>
+               <i className="fa-solid fa-right-from-bracket logout" onClick={handleLogout}></i>
+               <div className="tooltip">LogOut</div>
+            </div>
+          )}
+
         </div>
       </div>
     );

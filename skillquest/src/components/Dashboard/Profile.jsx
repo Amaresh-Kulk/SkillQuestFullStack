@@ -1,172 +1,328 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import Chart from 'chart.js/auto';
 import axios from 'axios';
-import CalendarHeatmap from 'react-calendar-heatmap';
-import 'react-calendar-heatmap/dist/styles.css';
-import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts';
-import { useNavigate } from 'react-router-dom';
+import {jwtDecode} from 'jwt-decode';
 import './styles/Profile.css';
+import profilePhoto from './images/Batmobile.jpg';
 
 const Profile = () => {
-    const [user, setUser] = useState(null);
-    const [submissions, setSubmissions] = useState([]);
-    const [problems, setProblems] = useState([]);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [currentTab, setCurrentTab] = useState('Easy');
-    const [submissionError, setSubmissionError] = useState(null); // Track errors in fetching submissions
+  const [userData, setUserData] = useState(null);
+  const [aptitudeData, setAptitudeData] = useState(null);
+  const [codingData, setCodingData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-    const navigate = useNavigate();
+  const aptitudeStreaksChartRef = useRef(null);
+  const aptitudeDonutChartRef = useRef(null);
+  const codingStreaksChartRef = useRef(null);
+  const codingDonutChartRef = useRef(null);
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            setLoading(true);
-            setError(null);
-            setSubmissionError(null);
+  const initChart = (chartRef, chartId, data, options) => {
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+    const ctx = document.getElementById(chartId).getContext('2d');
+    chartRef.current = new Chart(ctx, {
+      type: options.type,
+      data: data,
+      options: options.chartOptions,
+    });
+  };
 
-            const token = localStorage.getItem('token');
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('User not authenticated');
+        setLoading(false);
+        return;
+      }
 
-            if (!token) {
-                navigate('/login');
-                return;
-            }
+      try {
+        const decoded = jwtDecode(token);
+        const userId = decoded?.user?.id;
+        if (!userId) {
+          setError('Invalid token');
+          setLoading(false);
+          return;
+        }
 
-            try {
-                const [userRes, submissionsRes, problemsRes] = await Promise.all([
-                    axios.get('http://localhost:8000/api/users/me', { headers: { Authorization: `Bearer ${token}` } }),
-                    axios.get('http://localhost:8000/api/submissions/user/me', { headers: { Authorization: `Bearer ${token}` } }), // Fetch submissions for current user
-                    axios.get('http://localhost:8000/api/coding', { headers: { Authorization: `Bearer ${token}` } }),
-                ]);
-
-                setUser(userRes.data);
-                setSubmissions(submissionsRes.data); // Assuming submissions response is an array
-                setProblems(problemsRes.data);
-            } catch (err) {
-                console.error('Error fetching data:', err);
-                setError('Failed to load data. Please try again later.');
-            } finally {
-                setLoading(false);
-            }
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         };
 
-        fetchProfile();
-    }, [navigate]);
+        // Fetch data
+        const aptitudeRes = await axios.get(`http://localhost:8000/api/aptitudeSubmissions/${userId}`, config);
+        const codingRes = await axios.get(`http://localhost:8000/api/submissions/${userId}`, config);
+        const userRes = await axios.get(`http://localhost:8000/api/users/${userId}`, config);
 
-    const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#a832a6'];
-    const difficultyKeys = ['School', 'Basic', 'Easy', 'Medium', 'Hard'];
+        // // Debug logs for API responses
+        // console.log('Aptitude API Response:', aptitudeRes.data);
+        // console.log('Coding API Response:', codingRes.data);
+        // console.log('User API Response:', userRes.data);
 
-    if (loading) return <p>Loading profile...</p>;
-    if (error) return <p style={{ color: 'red' }}>{error}</p>;
+        // Fetch question difficulties for aptitude submissions
+        const aptitudeSubmissions = await Promise.all(
+          aptitudeRes.data.submissions.map(async (submission) => {
+            const questionRes = await axios.get(
+              `http://localhost:8000/api/aptitude/${submission.questionId._id}`,
+              config
+            );
+            return { ...submission, questionId: { ...submission.questionId, difficulty: questionRes.data.difficulty || 'unknown' } };
+          })
+        );
 
-    const solvedByDifficulty = difficultyKeys.map((key) => ({
-        name: key,
-        value: user?.problemCounts?.[key.toLowerCase()] || 0,
-    }));
+        // Fetch question difficulties for coding submissions
+        const codingSubmissions = await Promise.all(
+          codingRes.data.submissions.map(async (submission) => {
+            const questionRes = await axios.get(
+              `http://localhost:8000/api/coding/${submission.questionId._id}`,
+              config
+            );
+            return { ...submission, questionId: { ...submission.questionId, difficulty: questionRes.data.difficulty || 'unknown' } };
+          })
+        );
 
-    return (
-        <div className="profile-container">
-            {/* User Info */}
-            <div className="card user-info">
-                <p><strong>{user?.username || 'N/A'}</strong></p>
-                <p>{user?.email || 'N/A'}</p>
-            </div>
+        setAptitudeData({ submissions: aptitudeSubmissions });
+        setCodingData({ submissions: codingSubmissions });
+        setUserData(userRes.data);
 
-            {/* Daily Streaks */}
-            <div className="card heatmap">
-                <h3>Daily Submissions</h3>
-                <CalendarHeatmap
-                    startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
-                    endDate={new Date()}
-                    values={submissions}
-                    classForValue={(value) => {
-                        if (!value || value.count === 0) return 'color-empty';
-                        if (value.count > 10) return 'color-scale-4';
-                        if (value.count > 5) return 'color-scale-3';
-                        if (value.count > 2) return 'color-scale-2';
-                        return 'color-scale-1';
-                    }}
-                    tooltipDataAttrs={(value) => ({
-                        'data-tooltip': value?.date ? `${value.date}: ${value.count || 0} submissions` : 'No submissions',
-                    })}
-                />
-            </div>
+        setLoading(false);
+      } catch (err) {
+        // console.error('Error fetching data:', err.message);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
 
-            {/* Problems Solved */}
-            <div className="card problems">
-                <div className="problems-header">
-                    <div className="tabs">
-                        {difficultyKeys.map((key) => (
-                            <button
-                                key={key}
-                                className={`tab ${currentTab === key ? 'active' : ''}`}
-                                onClick={() => setCurrentTab(key)}
-                            >
-                                {key} ({user?.problemCounts?.[key.toLowerCase()] || 0})
-                            </button>
-                        ))}
-                    </div>
-                    <div className="pie-chart">
-                        <PieChart width={300} height={300}>
-                            <Pie
-                                data={solvedByDifficulty}
-                                dataKey="value"
-                                nameKey="name"
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={100}
-                                fill="#8884d8"
-                                label
-                            >
-                                {solvedByDifficulty.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                            <Legend />
-                        </PieChart>
-                    </div>
-                </div>
-                <ul className="problem-list">
-                    {problems
-                        ?.filter((problem) => problem.difficulty === currentTab)
-                        .map((problem) => (
-                            <li key={problem.id}>{problem.title}</li>
-                        ))}
-                </ul>
-            </div>
+    fetchUserData();
+  }, []);
 
-            {/* Submissions Section */}
-            <div className="card submissions">
-                <h3>Recent Submissions</h3>
-                {submissionError && <p style={{ color: 'red' }}>{submissionError}</p>}
-                {submissions.length === 0 ? (
-                    <p>No submissions found</p>
-                ) : (
-                    <ul>
-                        {submissions.map((submission) => (
-                            <li key={submission._id}>
-                                <p><strong>Question: {submission.questionId?.title || 'N/A'}</strong></p>
-                                <p>Language: {submission.language}</p>
-                                <p>Code:</p>
-                                <pre>{submission.code}</pre>
-                                {submission.output && (
-                                    <>
-                                        <p><strong>Output:</strong></p>
-                                        <pre>{submission.output}</pre>
-                                    </>
-                                )}
-                                {submission.error && (
-                                    <>
-                                        <p><strong>Error:</strong></p>
-                                        <pre>{submission.error}</pre>
-                                    </>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
-        </div>
+  const calculateStreaks = (data) => {
+    const streaks = {};
+    let currentStreak = 0;
+    let lastSubmissionDate = null;
+
+    data.forEach((item) => {
+      const submissionDate = new Date(item.submissionDate).toISOString().split('T')[0];
+      if (
+        lastSubmissionDate &&
+        new Date(submissionDate) - new Date(lastSubmissionDate) === 86400000
+      ) {
+        currentStreak++;
+      } else {
+        currentStreak = 1;
+      }
+
+      streaks[submissionDate] = currentStreak;
+      lastSubmissionDate = submissionDate;
+    });
+
+    return streaks;
+  };
+
+  const groupDataByDifficulty = (data) => {
+    const grouped = { easy: 0, medium: 0, hard: 0 };
+
+    if (!data.submissions || !Array.isArray(data.submissions)) {
+      console.error('Invalid submissions data:', data);
+      return grouped;
+    }
+
+    data.submissions.forEach((item) => {
+      const difficulty = item.questionId?.difficulty;
+      if (difficulty === 'easy') {
+        grouped.easy++;
+      } else if (difficulty === 'medium') {
+        grouped.medium++;
+      } else if (difficulty === 'hard') {
+        grouped.hard++;
+      } else {
+        console.warn('Unknown difficulty:', difficulty);
+      }
+    });
+
+    return grouped;
+  };
+
+  useEffect(() => {
+    if (!aptitudeData || !codingData || loading) return;
+
+    const aptitudeStreaks = calculateStreaks(aptitudeData.submissions);
+    const aptitudeGrouped = Object.entries(aptitudeStreaks).reduce((acc, [date, streak]) => {
+      const day = new Date(date).toLocaleString('en-US', { weekday: 'short' });
+      acc[day] = acc[day] ? acc[day] + streak : streak;
+      return acc;
+    }, {});
+
+    const aptitudeDifficultyGrouped = groupDataByDifficulty(aptitudeData);
+    const codingDifficultyGrouped = groupDataByDifficulty(codingData);
+
+    // Debug final data
+    console.log('Aptitude Streaks:', aptitudeGrouped);
+    console.log('Aptitude Difficulty:', aptitudeDifficultyGrouped);
+    console.log('Coding Difficulty:', codingDifficultyGrouped);
+
+    initChart(
+      aptitudeStreaksChartRef,
+      'aptitudeStreaksChart',
+      {
+        labels: Object.keys(aptitudeGrouped),
+        datasets: [
+          {
+            label: 'Aptitude Streaks',
+            data: Object.values(aptitudeGrouped),
+            borderColor: '#4F46E5',
+            tension: 1,
+          },
+        ],
+      },
+      {
+        type: 'line',
+        chartOptions: { responsive: true, plugins: { legend: { display: false } } },
+      }
     );
+
+    initChart(
+      aptitudeDonutChartRef,
+      'aptitudeDonutChart',
+      {
+        labels: ['Easy', 'Medium', 'Hard'],
+        datasets: [
+          {
+            data: [
+              aptitudeDifficultyGrouped.easy,
+              aptitudeDifficultyGrouped.medium,
+              aptitudeDifficultyGrouped.hard,
+            ],
+            backgroundColor: ['#22C55E', '#EAB308', '#EF4444'],
+          },
+        ],
+      },
+      {
+        type: 'doughnut',
+        chartOptions: { responsive: true, plugins: { legend: { display: true } } },
+      }
+    );
+
+    const codingStreaks = calculateStreaks(codingData.submissions);
+    const codingGrouped = Object.entries(codingStreaks).reduce((acc, [date, streak]) => {
+      const day = new Date(date).toLocaleString('en-US', { weekday: 'short' });
+      acc[day] = acc[day] ? acc[day] + streak : streak;
+      return acc;
+    }, {});
+
+    initChart(
+      codingStreaksChartRef,
+      'codingStreaksChart',
+      {
+        labels: Object.keys(codingGrouped),
+        datasets: [
+          {
+            label: 'Coding Streaks',
+            data: Object.values(codingGrouped),
+            borderColor: '#F59E0B',
+            tension: 1,
+          },
+        ],
+      },
+      {
+        type: 'line',
+        chartOptions: { responsive: true, plugins: { legend: { display: false } } },
+      }
+    );
+
+    initChart(
+      codingDonutChartRef,
+      'codingDonutChart',
+      {
+        labels: ['Easy', 'Medium', 'Hard'],
+        datasets: [
+          {
+            data: [
+              codingDifficultyGrouped.easy,
+              codingDifficultyGrouped.medium,
+              codingDifficultyGrouped.hard,
+            ],
+            backgroundColor: ['#22C55E', '#EAB308', '#EF4444'],
+          },
+        ],
+      },
+      {
+        type: 'doughnut',
+        chartOptions: { responsive: true, plugins: { legend: { display: true } } },
+      }
+    );
+  }, [aptitudeData, codingData, loading]);
+
+  
+
+
+  return (
+    <div className="profile-container">
+      <div className="profile-section">
+        {userData ? (
+          <>
+            <img src={profilePhoto} alt="Profile" className="profile-photo" />
+            <div>
+              <h2>{userData.username}</h2>
+              <p>{userData.email}</p>
+            </div>
+          </>
+        ) : (
+          <p>Loading user details...</p>
+        )}
+        
+      </div>
+
+
+      <div className="charts-container">
+        {loading && <p>Loading charts...</p>}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+
+        <div className="chart-row">
+          <div className="chart-section">
+            <h3>Aptitude Streaks</h3>
+            {aptitudeData?.submissions?.length > 0 ? (
+              <canvas id="aptitudeStreaksChart"></canvas>
+            ) : (
+              <p>No aptitude streak data available yet.</p>
+            )}
+          </div>
+          <div className="chart-section">
+            <h3>Aptitude Questions</h3>
+            {aptitudeData?.submissions?.length > 0 ? (
+              <canvas id="aptitudeDonutChart"></canvas>
+            ) : (
+              <p>No aptitude question data available yet.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="chart-row">
+          <div className="chart-section">
+            <h3>Coding Streaks</h3>
+            {codingData?.submissions?.length > 0 ? (
+              <canvas id="codingStreaksChart"></canvas>
+            ) : (
+              <p>No coding streak data available yet.</p>
+            )}
+          </div>
+          <div className="chart-section">
+            <h3>Coding Questions</h3>
+            {codingData?.submissions?.length > 0 ? (
+              <canvas id="codingDonutChart"></canvas>
+            ) : (
+              <p>No coding question data available yet.</p>
+            )}
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  );
 };
 
 export default Profile;

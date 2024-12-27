@@ -1,37 +1,88 @@
+/* Profile Container */
 .profile-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  width: 90%;
+  max-width: 1200px;
+  margin: auto;
+  margin-top: 50px;
   padding: 20px;
-  background-color: #1e1e2f;
-  color: #ffffff;
+  font-family: Arial, sans-serif;
+  color: #333;
 }
 
-.card {
-  padding: 20px;
+/* Profile Section */
+.profile-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.profile-photo {
+  border-radius: 50%;
+  margin-right: 20px;
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
+.profile-section h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #4F46E5;
+}
+
+.profile-section p {
+  margin: 5px 0 0;
+  color: #666;
+  max-width: 500px;
+}
+
+/* Charts Container */
+.charts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+/* Chart Rows for Horizontal Alignment */
+.chart-row {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+}
+
+/* Individual Chart Sections */
+.chart-section {
+  flex: 1;
+  text-align: center;
+  max-width: 400px;
+  padding: 10px;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  background-color: #2e2e42;
+  background-color: whitesmoke;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.heatmap .color-empty {
-  fill: #2e2e42;
+.chart-section h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  color: #333;
 }
 
-.heatmap .color-scale-1 {
-  fill: #7cb7ff;
+/* Canvas Styling for Charts */
+canvas {
+  max-width: 300px;
+  height: auto;
+}
+#aptitudeStreaksChart, 
+#codingStreaksChart {
+  margin-top: 100px;
 }
 
-.heatmap .color-scale-2 {
-  fill: #5da7ff;
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+  .chart-row {
+    flex-direction: column;
+  }
 }
-
-.heatmap .color-scale-3 {
-  fill: #3577ff;
-}
-
-.heatmap .color-scale-4 {
-  fill: #0047ff;
-}
-
-/* Add tab and pie chart styling as needed */

@@ -112,6 +112,27 @@ router.get('/me', auth, async (req, res) => {
         res.status(500).send(err.message);
     }
 });
+router.get('/:userId', async (req, res) => {
+    try {
+        // Extract the userId directly from the route parameters
+        const { userId } = req.params;
+
+        // Find the user using the userId
+        const user = await User.findById(userId).select('-password');
+        
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        // If the user is found, return the user data
+        res.json(user);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 
 // Get performance metrics for a user
 router.get('/:id/performance', async (req, res) => {
